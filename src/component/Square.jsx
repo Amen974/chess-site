@@ -1,20 +1,21 @@
-const Square = ({img,color,alt,id,onDrop,onDragStart}) => {
+
+const Square = ({ piece, color, id, onDrop, onDragStart }) => {
   return (
-    <div 
+    <div
       className={`flex justify-center items-center w-20 h-20 ${color}`}
       id={id}
-      onDragOver={(e)=>e.preventDefault()}
-      onDrop={()=>onDrop(id)}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={() => onDrop(id)}
     >
-      {img &&
-        <img 
-          src={img} 
-          alt={alt}
+      {piece && (
+        <img
+          src={piece.img}
+          alt=""
           draggable
-          onDragStart={()=>onDragStart(id)}
-          className="cursor-grab"
+          onDragStart={() => onDragStart(id)}
+          className="cursor-grab w-16 h-16"
         />
-      }
+      )}
     </div>
   );
 };

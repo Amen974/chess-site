@@ -3,38 +3,58 @@ import { files, ranks, startP } from "../constant";
 import Square from "./Square";
 
 const Board = () => {
-  const initialBoard = startP;
-  const [board,setboard] = useState(initialBoard);
-  const [dragFrom,setDragFrom] = useState(null)
-  const handelDragStart = (from)=>{
+  const [board, setboard] = useState({ ...startP });
+  const [dragFrom, setDragFrom] = useState(null);
+  const [turn, setTurn] = useState("white");
+
+  const handelDragStart = (from) => {
+    const piece = board[from];
+    if (!piece) return;
+    if (piece.color !== turn) return;
+
     setDragFrom(from);
-  }
-  const handelOnDrop = (to)=>{
-    if(!dragFrom || dragFrom === to)return;
+  };
+
+  const handelOnDrop = (to) => {
+    if (!dragFrom) return;
+
+    if (dragFrom === to) {
+      setDragFrom(null);
+      return;
+    }
+
+    const piece = board[dragFrom];
+    if (!piece || piece.color !== turn) {
+      setDragFrom(null);
+      return;
+    }
+
     const newBoard = { ...board };
-    newBoard[to] = newBoard[dragFrom];
-    newBoard[dragFrom] = '';
+    newBoard[to] = piece;
+    newBoard[dragFrom] = null;
+
+    setboard(newBoard);
+    setTurn(turn === "white" ? "black" : "white");
     setDragFrom(null);
-    setboard(newBoard)
-  }
+  };
+
   return (
     <div className="grid grid-cols-8 border-2">
-      {ranks.map(rank=>
-        files.map(file=>{
-          const squarId = file + rank
-          const isBlack = (files.indexOf(file) + ranks.indexOf(rank)) % 2 === 1
+      {ranks.map((rank) =>
+        files.map((file) => {
+          const squarId = file + rank;
+          const isBlack = (files.indexOf(file) + ranks.indexOf(rank)) % 2 === 1;
           const piece = board[squarId];
-          return(
+          return (
             <Square
               key={squarId}
               id={squarId}
-              color={isBlack ? 'bg-green-800' : 'bg-white'}
-              img={piece}
+              color={isBlack ? "bg-green-800" : "bg-white"}
+              piece={piece}
               onDragStart={handelDragStart}
               onDrop={handelOnDrop}
             />
-          )
-          
+          );
         })
       )}
     </div>
