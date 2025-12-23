@@ -32,21 +32,28 @@ const Board = () => {
     const toPiece = board[to];
 
     if (toPiece && toPiece.color === fromPiece.color) {
-    setDragFrom(null);
-    return;
-  }
+      setDragFrom(null);
+      return;
+    }
 
-    if (fromPiece.type === 'pawn') {
-      if (!pawnMove(dragFrom,to,turn,board)) {
+    if (fromPiece.type === "pawn") {
+      if (!pawnMove(dragFrom, to, turn, board)) {
         setDragFrom(null);
-        return
+        return;
       }
     }
 
-    if (fromPiece.type === 'rook') {
-      if (!rookMove(dragFrom,to,turn,board)) {
+    if (fromPiece.type === "rook") {
+      if (!rookMove(dragFrom, to, turn, board)) {
         setDragFrom(null);
-        return
+        return;
+      }
+    }
+
+    if (fromPiece.type === "bishop") {
+      if (!bishopMove(dragFrom, to, turn, board)) {
+        setDragFrom(null);
+        return;
       }
     }
 
@@ -59,88 +66,129 @@ const Board = () => {
     setDragFrom(null);
   };
 
-  const pawnMove = (from,to,turn,board)=>{
-    const fromFile = from[0]
-    const fromRank = Number(from[1])
+  const pawnMove = (from, to, turn, board) => {
+    const fromFile = from[0];
+    const fromRank = Number(from[1]);
 
-    const toFile = to[0]
-    const toRank = Number(to[1])
+    const toFile = to[0];
+    const toRank = Number(to[1]);
 
     const targetPiece = board[to];
 
-    const direction = turn === 'white' ? 1 : -1;
+    const direction = turn === "white" ? 1 : -1;
 
-    const startSquare = turn === 'white' ? 2 : 7;
+    const startSquare = turn === "white" ? 2 : 7;
 
-    const middleRank = fromRank + direction
-    const middlesquare = fromFile + middleRank
+    const middleRank = fromRank + direction;
+    const middlesquare = fromFile + middleRank;
 
     //one square
-    if (fromFile === toFile &&
-        toRank === fromRank + direction &&
-        !targetPiece
+    if (
+      fromFile === toFile &&
+      toRank === fromRank + direction &&
+      !targetPiece
     ) {
       return true;
     }
 
     //2 square
-    if(fromRank === startSquare &&
-       fromFile === toFile &&
-       toRank === fromRank + 2 * direction &&
-       !board[middlesquare]&&
-       !targetPiece
-    ){
+    if (
+      fromRank === startSquare &&
+      fromFile === toFile &&
+      toRank === fromRank + 2 * direction &&
+      !board[middlesquare] &&
+      !targetPiece
+    ) {
       return true;
     }
 
     //capture
-    if (Math.abs(toFile.charCodeAt(0) - fromFile.charCodeAt(0)) === 1 &&
-        toRank === fromRank + direction &&
-        targetPiece &&
-        targetPiece.color !== turn
+    if (
+      Math.abs(toFile.charCodeAt(0) - fromFile.charCodeAt(0)) === 1 &&
+      toRank === fromRank + direction &&
+      targetPiece &&
+      targetPiece.color !== turn
     ) {
-      return true
+      return true;
     }
 
-    return false
-  }
+    return false;
+  };
 
-  const rookMove = (from,to,turn,board)=>{
-    const fromFile = from[0]
-    const fromRank = Number(from[1])
+  const rookMove = (from, to, turn, board) => {
+    const fromFile = from[0];
+    const fromRank = Number(from[1]);
 
-    const toFile = to[0]
-    const toRank = Number(to[1])
+    const toFile = to[0];
+    const toRank = Number(to[1]);
 
     const targetPiece = board[to];
 
     if (fromFile !== toFile && fromRank !== toRank) {
-      return false
+      return false;
     }
 
+    const fileStep = fromFile === toFile ? 0 : fromFile < toFile ? 1 : -1;
+    const rankStep = fromRank === toRank ? 0 : fromRank < toRank ? 1 : -1;
+
+    let currentFile = fromFile.charCodeAt(0) + fileStep;
+    let currentRank = fromRank + rankStep;
+
+    while (currentFile !== toFile.charCodeAt(0) || currentRank !== toRank) {
+      const square = String.fromCharCode(currentFile) + currentRank;
+
+      if (board[square]) return false;
+
+      currentFile += fileStep;
+      currentRank += rankStep;
+    }
+
+    if (targetPiece && targetPiece.color === turn) {
+      return false;
+    }
+
+    return true;
+  };
+
+  const bishopMove = (from, to, turn, board) => {
+    const fromFile = from[0];
+    const fromRank = Number(from[1]);
+
+    const toFile = to[0];
+    const toRank = Number(to[1]);
+
+    const targetPiece = board[to];
+
+    const fileDiff = Math.abs(toFile.charCodeAt(0) - fromFile.charCodeAt(0));
+    const rankDiff = Math.abs(toRank - fromRank);
+
+    if (fileDiff !== rankDiff) return false;
+
     const fileStep =
-      fromFile === toFile ? 0 : fromFile < toFile ? 1 : -1
-    const rankStep = 
-      fromRank === toRank ? 0 : fromRank < toRank ? 1 : -1
+      toFile > fromFile ? 1 : -1;
+    const rankStep =
+      toRank > fromRank ? 1 : -1;
 
     let currentFile = fromFile.charCodeAt(0) + fileStep
     let currentRank = fromRank + rankStep
 
-    while (currentFile !== toFile.charCodeAt(0) || currentRank !== toRank) {
+    while (currentFile !== toFile.charCodeAt(0) && currentRank !== toRank) {
       const square = String.fromCharCode(currentFile) + currentRank
 
-      if (board[square]) return false;
-      
+      if (board[square]) {
+        return false
+      }
+
       currentFile += fileStep
       currentRank += rankStep
+
+      if (targetPiece && targetPiece.color === turn) {
+        return false
+      }
     }
 
-    if (targetPiece && targetPiece.color === turn) {
-    return false;
-    }
-
-    return true
-  }
+    return true;
+  };
 
   return (
     <div className="grid grid-cols-8 border-2">
