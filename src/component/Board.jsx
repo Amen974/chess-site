@@ -57,6 +57,13 @@ const Board = () => {
       }
     }
 
+    if (fromPiece.type === "queen") {
+      if (!queenMove(dragFrom, to, turn, board)) {
+        setDragFrom(null);
+        return;
+      }
+    }
+
     const newBoard = { ...board };
     newBoard[to] = fromPiece;
     newBoard[dragFrom] = null;
@@ -189,6 +196,14 @@ const Board = () => {
 
     return true;
   };
+
+  const queenMove = (from, to, turn, board) => {
+  return (
+    rookMove(from, to, turn, board) ||
+    bishopMove(from, to, turn, board)
+  );
+};
+
 
   return (
     <div className="grid grid-cols-8 border-2">
