@@ -1,3 +1,5 @@
+import { isSquareAttacked } from "./IsSquareAttacked";
+
 export function kingMove(from, to, turn, board){
     const fromFile = from[0];
     const fromRank = Number(from[1]);
@@ -12,6 +14,9 @@ export function kingMove(from, to, turn, board){
 
     const targetPiece = board[to];
     if (targetPiece && targetPiece.color === turn) return false;
+
+    const enemyColor = turn === 'white' ? 'black' : 'white';
+     if (isSquareAttacked(to, enemyColor, board)) return false;
 
     return true;
   };
