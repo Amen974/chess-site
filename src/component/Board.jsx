@@ -2,6 +2,7 @@ import { useState } from "react";
 import { files, ranks, startP } from "../constant";
 import Square from "./Square";
 import { isLegalMove } from "../moves/IsLegalMove";
+import { isCheckmate } from "../moves/IsCheckmate";
 
 const Board = () => {
   const [board, setboard] = useState({ ...startP });
@@ -39,10 +40,14 @@ const Board = () => {
 
     if (!isLegalMove(dragFrom, to, board, turn)) return;
 
-
     const newBoard = { ...board };
     newBoard[to] = fromPiece;
     newBoard[dragFrom] = null;
+
+    const enemyColor = turn === "white" ? "black" : "white";
+    if (isCheckmate(enemyColor, newBoard)) {
+      alert(`${turn} wins by checkmate`);
+    }
 
     setboard(newBoard);
     setTurn(turn === "white" ? "black" : "white");
