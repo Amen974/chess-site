@@ -1,4 +1,5 @@
 import { bishopMove } from "./BishopMove";
+import { isKingInCheck } from "./IsKingInCheck";
 import { kingMove } from "./KingMove";
 import { knightMove } from "./KnightMove";
 import { pawnMove } from "./PawnMove";
@@ -9,20 +10,38 @@ export function isLegalMove(from, to, board, turn) {
   const piece = board[from];
   if (!piece) return false;
 
+  let valid = false;
+
   switch (piece.type) {
     case "pawn":
-      return pawnMove(from, to, turn, board);
+      valid = pawnMove(from, to, turn, board);
+      break;
     case "knight":
-      return knightMove(from, to, turn, board);
+      valid = knightMove(from, to, turn, board);
+      break;
     case "bishop":
-      return bishopMove(from, to, turn, board);
+      valid = bishopMove(from, to, turn, board);
+      break;
     case "rook":
-      return rookMove(from, to, turn, board);
+      valid = rookMove(from, to, turn, board);
+      break;
     case "queen":
-      return queenMove(from, to, turn, board);
+      valid = queenMove(from, to, turn, board);
+      break;
     case "king":
-      return kingMove(from, to, turn, board);
+      valid = kingMove(from, to, turn, board);
+      break;
     default:
       return false;
   }
+
+  if (!valid) return false;
+
+  const newBoard = { ...board };
+  newBoard[to] = piece;
+  newBoard[from] = null;
+
+  if (isKingInCheck(turn, newBoard)) return false;
+
+  return true;
 }
