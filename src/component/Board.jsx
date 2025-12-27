@@ -20,7 +20,7 @@ const Board = () => {
     white: { kingSide: true, queenSide: true },
     black: { kingSide: true, queenSide: true },
   });
-
+  
   const handleDragStart = (from) => {
     const piece = board[from];
     if (!piece) return;
