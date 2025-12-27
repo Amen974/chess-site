@@ -8,6 +8,7 @@ import PromotionModal from "./PromotionModal";
 import { updateCastlingRights } from "../moves/UpdateCastlingRights";
 import { canCastleKingSide } from "../moves/CanCastleKingSide";
 import { canCastleQueenSide } from "../moves/canCastleQueenSide";
+import { isStalemate } from "../moves/IsStalemate";
 
 
 const Board = () => {
@@ -70,9 +71,13 @@ const Board = () => {
     }
 
     const enemyColor = turn === "white" ? "black" : "white";
-    if (isCheckmate(enemyColor, newBoard)) {
+
+      if (isCheckmate(enemyColor, newBoard)) {
       alert(`${turn} wins by checkmate`);
+    } else if (isStalemate(enemyColor, newBoard)) {
+      alert("Draw by stalemate");
     }
+
 
     setBoard(newBoard);
     setTurn(enemyColor);
