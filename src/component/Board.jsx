@@ -2,15 +2,14 @@ import { useState } from "react";
 import { files, ranks, startP } from "../constant";
 import Square from "./Square";
 import { isLegalMove } from "../moves/IsLegalMove";
-import { isCheckmate } from "../moves/IsCheckmate";
 import { isPromotionSquare } from "../moves/IsPromotionSquare";
 import PromotionModal from "./PromotionModal";
 import { updateCastlingRights } from "../moves/UpdateCastlingRights";
 import { canCastleKingSide } from "../moves/CanCastleKingSide";
 import { canCastleQueenSide } from "../moves/canCastleQueenSide";
-import { isStalemate } from "../moves/IsStalemate";
 import { isLightSquare } from "../moves/isLightSquare";
-import { isInsufficientMaterial } from "../moves/isInsufficientMaterial";
+import { updateHalfmoveClock } from "../moves/updateHalfmoveClock";
+import { evaluateGameEnd } from "../moves/evaluateGameEnd";
 
 
 const Board = () => {
@@ -22,6 +21,7 @@ const Board = () => {
     white: { kingSide: true, queenSide: true },
     black: { kingSide: true, queenSide: true },
   });
+  const [halfmoveClock, setHalfmoveClock] = useState(0);
   
   const handleDragStart = (from) => {
     const piece = board[from];
@@ -65,6 +65,7 @@ const Board = () => {
     newBoard[dragFrom] = null;
 
     updateCastlingRights(dragFrom, piece, setCastlingRights);
+    updateHalfmoveClock(dragFrom, to, piece, newBoard, setHalfmoveClock)
 
     if (isPromotionSquare(to, newBoard)) {
       setPromotion({ square: to, color: piece.color });
@@ -74,15 +75,16 @@ const Board = () => {
 
     const enemyColor = turn === "white" ? "black" : "white";
 
-      if (isCheckmate(enemyColor, newBoard)) {
-      alert(`${turn} wins by checkmate`);
-    } else if (isStalemate(enemyColor, newBoard)) {
-      alert("Draw by stalemate");
-    } else if (isInsufficientMaterial(board)) {
-      alert("Draw — Insufficient material");
-    }
+   const result = evaluateGameEnd(turn, newBoard, halfmoveClock);
 
-
+  if (result) {
+    if (result.result === "checkmate") {
+      alert(`${result.winner} wins by checkmate`);
+    } else {
+      alert(`Draw by ${result.reason}`);
+      }
+  return;
+}
 
     setBoard(newBoard);
     setTurn(enemyColor);
