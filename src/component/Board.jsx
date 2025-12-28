@@ -9,6 +9,8 @@ import { updateCastlingRights } from "../moves/UpdateCastlingRights";
 import { canCastleKingSide } from "../moves/CanCastleKingSide";
 import { canCastleQueenSide } from "../moves/canCastleQueenSide";
 import { isStalemate } from "../moves/IsStalemate";
+import { isLightSquare } from "../moves/isLightSquare";
+import { isInsufficientMaterial } from "../moves/isInsufficientMaterial";
 
 
 const Board = () => {
@@ -76,7 +78,10 @@ const Board = () => {
       alert(`${turn} wins by checkmate`);
     } else if (isStalemate(enemyColor, newBoard)) {
       alert("Draw by stalemate");
+    } else if (isInsufficientMaterial(board)) {
+      alert("Draw — Insufficient material");
     }
+
 
 
     setBoard(newBoard);
@@ -141,14 +146,13 @@ const Board = () => {
         {ranks.map((rank) =>
           files.map((file) => {
             const squareId = file + rank;
-            const isBlack =
-              (files.indexOf(file) + ranks.indexOf(rank)) % 2 === 1;
+            const isWhite = isLightSquare(squareId)
 
             return (
               <Square
                 key={squareId}
                 id={squareId}
-                color={isBlack ? "bg-green-800" : "bg-white"}
+                color={isWhite ? "bg-green-800" : "bg-white" }
                 piece={board[squareId]}
                 onDragStart={handleDragStart}
                 onDrop={handleOnDrop}
