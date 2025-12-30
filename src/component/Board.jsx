@@ -10,6 +10,7 @@ import { canCastleQueenSide } from "../moves/canCastleQueenSide";
 import { isLightSquare } from "../moves/isLightSquare";
 import { updateHalfmoveClock } from "../moves/updateHalfmoveClock";
 import { evaluateGameEnd } from "../moves/evaluateGameEnd";
+import { updateEnPassantSquare } from "../moves/updateEnPassantSquare";
 
 
 const Board = () => {
@@ -22,6 +23,7 @@ const Board = () => {
     black: { kingSide: true, queenSide: true },
   });
   const [halfmoveClock, setHalfmoveClock] = useState(0);
+  const [enPassantSquare, setEnPassantSquare] = useState(null)
   
   const handleDragStart = (from) => {
     const piece = board[from];
@@ -55,7 +57,7 @@ const Board = () => {
       return;
     }
 
-    if (!isLegalMove(dragFrom, to, board, turn)) {
+    if (!isLegalMove(dragFrom, to, board, turn, enPassantSquare)) {
       setDragFrom(null);
       return;
     }
@@ -66,6 +68,17 @@ const Board = () => {
 
     updateCastlingRights(dragFrom, piece, setCastlingRights);
     updateHalfmoveClock(dragFrom, to, piece, newBoard, setHalfmoveClock)
+    updateEnPassantSquare(dragFrom, to, piece, setEnPassantSquare)
+
+    if (
+      piece.type === "pawn" &&
+      to === enPassantSquare
+    ) {
+      const direction = piece.color === "white" ? -1 : 1;
+      const capturedSquare = to[0] + (Number(to[1]) + direction);
+      newBoard[capturedSquare] = null;
+    }
+
 
     if (isPromotionSquare(to, newBoard)) {
       setPromotion({ square: to, color: piece.color });

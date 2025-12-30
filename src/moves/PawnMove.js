@@ -1,4 +1,4 @@
-export function pawnMove(from, to, turn, board) {
+export function pawnMove(from, to, turn, board, enPassantSquare) {
   const fromFile = from[0];
   const fromRank = Number(from[1]);
 
@@ -39,6 +39,10 @@ export function pawnMove(from, to, turn, board) {
   ) {
     return true;
   }
+
+  //en passant
+  if (to === enPassantSquare) return true;
+
 
   return false;
 }

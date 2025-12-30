@@ -6,7 +6,7 @@ import { pawnMove } from "./PawnMove";
 import { queenMove } from "./QueenMove";
 import { rookMove } from "./RookMove";
 
-export function isLegalMove(from, to, board, turn) {
+export function isLegalMove(from, to, board, turn, enPassantSquare) {
   const piece = board[from];
   if (!piece) return false;
 
@@ -14,7 +14,7 @@ export function isLegalMove(from, to, board, turn) {
 
   switch (piece.type) {
     case "pawn":
-      valid = pawnMove(from, to, turn, board);
+      valid = pawnMove(from, to, turn, board, enPassantSquare);
       break;
     case "knight":
       valid = knightMove(from, to, turn, board);
