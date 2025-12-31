@@ -5,7 +5,7 @@ import { updateHalfmoveClock } from "./state/updateHalfmoveClock";
 import { canCastleKingSide } from "./validation/canCastleKingSide";
 import { canCastleQueenSide } from "./validation/canCastleQueenSide";
 import { isLegalMove } from "./validation/isLegalMove";
-import { isPromotionSquare } from "./validation/IsPromotionSquare";
+import { isPromotionSquare } from "./validation/isPromotionSquare";
 
 
 export function applyPlayerMove({
