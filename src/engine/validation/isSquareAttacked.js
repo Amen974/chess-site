@@ -1,9 +1,10 @@
-import { pawnAttacks } from "./PawnAttacks";
-import { knightMove } from "./KnightMove";
-import { bishopMove } from "./BishopMove";
-import { rookMove } from "./RookMove";
-import { queenMove } from "./QueenMove";
-import { kingMove } from "./KingMove";
+import { bishopMove } from "../moveGeneration/bishop";
+import { kingMove } from "../moveGeneration/king";
+import { knightMove } from "../moveGeneration/knight";
+import { pawnAttacks } from "../moveGeneration/pawnAttacks";
+import { queenMove } from "../moveGeneration/queen";
+import { rookMove } from "../moveGeneration/rook";
+
 
 export function isSquareAttacked(to, enemyColor, board) {
   for (const from in board) {

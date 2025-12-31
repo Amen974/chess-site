@@ -1,4 +1,4 @@
-import React from 'react'
+
 
 const pieces = ["queen", "rook", "bishop", "knight"];
 

@@ -1,4 +1,5 @@
-import { isSquareAttacked } from "./IsSquareAttacked";
+import { isSquareAttacked } from "./isSquareAttacked";
+
 
 
 export function isKingInCheck(color, board) {

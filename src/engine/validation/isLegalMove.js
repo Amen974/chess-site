@@ -1,10 +1,11 @@
-import { bishopMove } from "./BishopMove";
-import { isKingInCheck } from "./IsKingInCheck";
-import { kingMove } from "./KingMove";
-import { knightMove } from "./KnightMove";
-import { pawnMove } from "./PawnMove";
-import { queenMove } from "./QueenMove";
-import { rookMove } from "./RookMove";
+import { bishopMove } from "../moveGeneration/bishop";
+import { kingMove } from "../moveGeneration/king";
+import { knightMove } from "../moveGeneration/knight";
+import { pawnMove } from "../moveGeneration/pawn";
+import { queenMove } from "../moveGeneration/queen";
+import { rookMove } from "../moveGeneration/rook";
+import { isKingInCheck } from "./isKingInCheck";
+
 
 export function isLegalMove(from, to, board, turn, enPassantSquare) {
   const piece = board[from];

@@ -1,7 +1,7 @@
-import { isCheckmate } from "./IsCheckmate";
-import { isFiftyMoveDraw } from "./isFiftyMoveDraw";
+import { isCheckmate } from "./isCheckmate";
 import { isInsufficientMaterial } from "./isInsufficientMaterial";
-import { isStalemate } from "./IsStalemate";
+import { isStalemate } from "./isStalemate";
+
 
 export function evaluateGameEnd(turn, board, halfmoveClock) {
   const enemy = turn === "white" ? "black" : "white";
@@ -18,7 +18,7 @@ export function evaluateGameEnd(turn, board, halfmoveClock) {
     return { result: "draw", reason: "insufficient material" };
   }
 
-  if (isFiftyMoveDraw(halfmoveClock)) {
+  if (halfmoveClock >= 100) {
     return { result: "draw", reason: "50-move rule" };
   }
 

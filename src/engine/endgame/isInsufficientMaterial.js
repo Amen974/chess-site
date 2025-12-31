@@ -1,5 +1,6 @@
+import { isLightSquare } from "../validation/isLightSquare";
 import { getMaterial } from "./getMaterial";
-import { isLightSquare } from "./isLightSquare";
+
 
 export function isInsufficientMaterial(board) {
   const material = getMaterial(board);

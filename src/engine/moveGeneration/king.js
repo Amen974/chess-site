@@ -1,4 +1,5 @@
-import { isSquareAttacked } from "./IsSquareAttacked";
+import { isSquareAttacked } from "../validation/isSquareAttacked";
+
 
 export function kingMove(from, to, turn, board){
     const fromFile = from[0];

@@ -1,5 +1,6 @@
-import { isKingInCheck } from "./IsKingInCheck";
-import { isSquareAttacked } from "./IsSquareAttacked";
+import { isKingInCheck } from "./isKingInCheck";
+import { isSquareAttacked } from "./isSquareAttacked";
+
 
 export function canCastleKingSide(piece, from, to, board, castlingRights) {
   if (

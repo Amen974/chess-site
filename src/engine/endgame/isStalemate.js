@@ -1,8 +1,9 @@
-import { isKingInCheck } from "./IsKingInCheck";
-import { isLegalMove } from "./IsLegalMove";
+import { isKingInCheck } from "../validation/isKingInCheck";
+import { isLegalMove } from "../validation/isLegalMove";
 
-export function isCheckmate(color, board) {
-  if (!isKingInCheck(color, board)) return false;
+
+export function isStalemate(color, board) {
+  if (isKingInCheck(color, board)) return false;
 
   for (const from in board) {
     const piece = board[from];
