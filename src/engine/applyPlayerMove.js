@@ -26,10 +26,26 @@ export function applyPlayerMove({
   let newHalfmoveClock = halfmoveClock;
   let promotion = null;
 
+  const capturedPiece = board[to];
+
+  const move = {
+  from,
+  to,
+  piece,
+  captured: capturedPiece,
+  prevCastlingRights: structuredClone(castlingRights),
+  prevEnPassantSquare: enPassantSquare,
+  prevHalfmoveClock: halfmoveClock,
+  promotion: null,
+  special: null,
+  };
+
+
   /* ================= CASTLING ================= */
 
   if (canCastleKingSide(piece, from, to, board, castlingRights)) {
     newBoard = handleCastle(board, piece.color, "king");
+    move.special = "castle-king"; 
     updateCastlingRights(from, piece, (v) => (newCastlingRights = v));
     return finalizeTurn({
       board: newBoard,
@@ -37,11 +53,13 @@ export function applyPlayerMove({
       castlingRights: newCastlingRights,
       enPassantSquare: null,
       halfmoveClock: newHalfmoveClock,
+      move,
     });
   }
 
   if (canCastleQueenSide(piece, from, to, board, castlingRights)) {
     newBoard = handleCastle(board, piece.color, "queen");
+    move.special = "castle-queen";
     updateCastlingRights(from, piece, (v) => (newCastlingRights = v));
     return finalizeTurn({
       board: newBoard,
@@ -49,6 +67,7 @@ export function applyPlayerMove({
       castlingRights: newCastlingRights,
       enPassantSquare: null,
       halfmoveClock: newHalfmoveClock,
+      move,
     });
   }
 
@@ -64,6 +83,10 @@ export function applyPlayerMove({
   if (piece.type === "pawn" && to === enPassantSquare) {
     const dir = piece.color === "white" ? -1 : 1;
     const capturedSquare = to[0] + (Number(to[1]) + dir);
+
+    move.captured = board[capturedSquare];
+    move.special = "en-passant";
+    
     newBoard[capturedSquare] = null;
   }
 
@@ -84,6 +107,7 @@ export function applyPlayerMove({
       enPassantSquare: newEnPassantSquare,
       halfmoveClock: newHalfmoveClock,
       promotion,
+      move,
       gameResult: null,
     };
   }
@@ -100,6 +124,7 @@ export function applyPlayerMove({
     enPassantSquare: newEnPassantSquare,
     halfmoveClock: newHalfmoveClock,
     promotion: null,
+    move,
     gameResult,
   };
 }

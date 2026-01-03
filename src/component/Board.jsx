@@ -7,6 +7,7 @@ import { applyPlayerMove } from "../engine/applyPlayerMove";
 
 const Board = () => {
   const [board, setBoard] = useState({ ...startP });
+  const [history, setHistory] = useState([]);
   const [turn, setTurn] = useState("white");
   const [dragFrom, setDragFrom] = useState(null);
 
@@ -49,6 +50,7 @@ const Board = () => {
     if (!result) return;
 
     setBoard(result.board);
+    setHistory(prev => [...prev, result.move])
     setTurn(result.turn);
     setCastlingRights(result.castlingRights);
     setEnPassantSquare(result.enPassantSquare);
