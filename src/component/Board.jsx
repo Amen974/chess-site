@@ -4,6 +4,7 @@ import Square from "./Square";
 import PromotionModal from "./PromotionModal";
 import { isLightSquare } from "../engine/validation/isLightSquare";
 import { applyPlayerMove } from "../engine/applyPlayerMove";
+import { undoMove } from "../engine/undoMove";
 
 const Board = () => {
   const [board, setBoard] = useState({ ...startP });
@@ -114,6 +115,8 @@ const Board = () => {
           onSelect={handlePromotion}
         />
       )}
+
+      <button className="bg-red-700 border-2 rounded-2xl p-1 text-white cursor-pointer" onClick={()=>undoMove(board, history, setCastlingRights, setEnPassantSquare, setHalfmoveClock, setTurn, setHistory)}>UNDO</button>
     </>
   );
 };
