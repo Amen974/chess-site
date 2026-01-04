@@ -9,6 +9,7 @@ import { undoMove } from "../engine/undoMove";
 const Board = () => {
   const [board, setBoard] = useState({ ...startP });
   const [history, setHistory] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
   const [turn, setTurn] = useState("white");
   const [dragFrom, setDragFrom] = useState(null);
 
@@ -85,6 +86,59 @@ const Board = () => {
     setTurn(color === "white" ? "black" : "white");
   };
 
+  /* ================= Undo ================= */
+  const handleUndo = () => {
+  const lastMove = history.at(-1);
+  if (!lastMove) return;
+
+  const prev = undoMove({
+    board,
+    lastMove,
+    castlingRights,
+    enPassantSquare,
+    halfmoveClock,
+  });
+
+  if (!prev) return;
+
+  setBoard(prev.board);
+  setTurn(prev.turn);
+  setCastlingRights(prev.castlingRights);
+  setEnPassantSquare(prev.enPassantSquare);
+  setHalfmoveClock(prev.halfmoveClock);
+
+  setHistory(h => h.slice(0, -1));
+  setRedoStack(r => [...r, lastMove]);
+};
+
+/* ================= Redo ================= */
+  const handleRedo = () => {
+  const move = redoStack.at(-1);
+  if (!move) return;
+
+  const result = applyPlayerMove({
+    board,
+    from: move.from,
+    to: move.to,
+    turn,
+    castlingRights,
+    enPassantSquare,
+    halfmoveClock,
+  });
+
+  if (!result) return;
+
+  setBoard(result.board);
+  setTurn(result.turn);
+  setCastlingRights(result.castlingRights);
+  setEnPassantSquare(result.enPassantSquare);
+  setHalfmoveClock(result.halfmoveClock);
+  setPromotion(result.promotion);
+
+  setHistory(h => [...h, result.move]);
+  setRedoStack(r => r.slice(0, -1));
+  };
+
   /* ================= RENDER ================= */
 
   return (
@@ -116,7 +170,8 @@ const Board = () => {
         />
       )}
 
-      <button className="bg-red-700 border-2 rounded-2xl p-1 text-white cursor-pointer" onClick={()=>undoMove(board, history, setCastlingRights, setEnPassantSquare, setHalfmoveClock, setTurn, setHistory)}>UNDO</button>
+      <button className="bg-red-700 border-2 rounded-2xl p-1 text-white cursor-pointer" onClick={handleUndo}>UNDO</button>
+      <button className="bg-red-700 border-2 rounded-2xl p-1 text-white cursor-pointer" onClick={handleRedo}>REDO</button>
     </>
   );
 };

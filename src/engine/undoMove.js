@@ -1,54 +1,67 @@
-export function undoMove(board, history, setCastlingRights, setEnPassantSquare, setHalfmoveClock, setTurn, setHistory){
-  const lastMove = history.at(-1);
-  if(!lastMove) return;
-  
-  board[lastMove.from] = board[lastMove.to]
-  board[lastMove.to] = lastMove.captured ?? null
+export function undoMove({
+  board,
+  lastMove,
+  castlingRights,
+  enPassantSquare,
+  halfmoveClock,
+}) {
+  if (!lastMove) return null;
 
-  if (lastMove.special === 'en-passant') {
-    board[lastMove.to] = null
+  const newBoard = { ...board };
+
+  /* ===== NORMAL UNDO ===== */
+  newBoard[lastMove.from] = lastMove.piece;
+  newBoard[lastMove.to] = lastMove.captured ?? null;
+
+  /* ===== EN PASSANT ===== */
+  if (lastMove.special === "en-passant") {
+    newBoard[lastMove.to] = null;
     const dir = lastMove.piece.color === "white" ? -1 : 1;
-    const capturedSquare = lastMove.to[0] + (Number(lastMove.to[1]) + dir);
-
-    board[capturedSquare] = lastMove.captured;
+    const capturedSquare =
+      lastMove.to[0] + (Number(lastMove.to[1]) + dir);
+    newBoard[capturedSquare] = lastMove.captured;
   }
 
-  if (lastMove.special === 'castle-king') {
-    if (lastMove.piece.color === 'white') {
-      board.e1 = board.g1
-      board.h1 = board.f1
-      board.g1 = board.f1 = null
+  /* ===== CASTLING ===== */
+  if (lastMove.special === "castle-king") {
+    if (lastMove.piece.color === "white") {
+      newBoard.e1 = newBoard.g1;
+      newBoard.h1 = newBoard.f1;
+      newBoard.g1 = newBoard.f1 = null;
     } else {
-      board.e8 = board.g8;
-      board.h8 = board.f8;
-      board.g8 = board.f8 = null;
+      newBoard.e8 = newBoard.g8;
+      newBoard.h8 = newBoard.f8;
+      newBoard.g8 = newBoard.f8 = null;
     }
   }
 
-  if (lastMove.special === 'castle-queen') {
-    if (lastMove.piece.color === 'white') {
-      board.e1 = board.c1
-      board.a1 = board.d1
-      board.c1 = board.d1 = null
+  if (lastMove.special === "castle-queen") {
+    if (lastMove.piece.color === "white") {
+      newBoard.e1 = newBoard.c1;
+      newBoard.a1 = newBoard.d1;
+      newBoard.c1 = newBoard.d1 = null;
     } else {
-      board.e8 = board.c8
-      board.a8 = board.d8
-      board.c8 = board.d8 = null
+      newBoard.e8 = newBoard.c8;
+      newBoard.a8 = newBoard.d8;
+      newBoard.c8 = newBoard.d8 = null;
     }
   }
 
+  /* ===== PROMOTION ===== */
   if (lastMove.promotion) {
-    board[lastMove.from] = {
+    newBoard[lastMove.from] = {
       type: "pawn",
       color: lastMove.piece.color,
       img: `/pieces-basic-svg/pawn-${lastMove.piece.color[0]}.svg`,
-    }
-    board[lastMove.to] = lastMove.captured ?? null;
+    };
+    newBoard[lastMove.to] = lastMove.captured ?? null;
   }
 
-  setCastlingRights(lastMove.prevCastlingRights);
-  setEnPassantSquare(lastMove.prevEnPassantSquare);
-  setHalfmoveClock(lastMove.prevHalfmoveClock);
-  setTurn(lastMove.piece.color);
-  setHistory(h => h.slice(0, -1));
+  return {
+    board: newBoard,
+    turn: lastMove.piece.color,
+    castlingRights: lastMove.prevCastlingRights,
+    enPassantSquare: lastMove.prevEnPassantSquare,
+    halfmoveClock: lastMove.prevHalfmoveClock,
+  };
 }
