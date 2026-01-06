@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { files, ranks, startP } from "../constant";
 import Square from "./Square";
 import PromotionModal from "./PromotionModal";
 import { isLightSquare } from "../engine/validation/isLightSquare";
 import { applyPlayerMove } from "../engine/applyPlayerMove";
 import { undoMove } from "../engine/undoMove";
+import { exportFEN } from "../engine/exportFEN";
 
 const Board = () => {
   const [board, setBoard] = useState({ ...startP });
@@ -138,6 +139,19 @@ const Board = () => {
   setHistory(h => [...h, result.move]);
   setRedoStack(r => r.slice(0, -1));
   };
+
+  useEffect(() => {
+    const fen = exportFEN({
+    board,
+    turn,
+    castlingRights,
+    enPassantSquare,
+    halfmoveClock,
+    fullmoveNumber: Math.floor(history.length / 2) + 1,
+  }) 
+  },[board])
+
+  
 
   /* ================= RENDER ================= */
 
