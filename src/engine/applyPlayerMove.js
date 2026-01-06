@@ -1,6 +1,7 @@
 import { evaluateGameEnd } from "./endgame/evaluateGameEnd";
 import { updateCastlingRights } from "./state/updateCastlingRights";
 import { updateEnPassantSquare } from "./state/updateEnPassantSquare";
+import { updateFullmoveNumber } from "./state/updateFullmoveNumber";
 import { updateHalfmoveClock } from "./state/updateHalfmoveClock";
 import { canCastleKingSide } from "./validation/canCastleKingSide";
 import { canCastleQueenSide } from "./validation/canCastleQueenSide";
@@ -16,6 +17,7 @@ export function applyPlayerMove({
   castlingRights,
   enPassantSquare,
   halfmoveClock,
+  fullmoveNumber,
 }) {
   const piece = board[from];
   if (!piece || piece.color !== turn) return null;
@@ -24,6 +26,7 @@ export function applyPlayerMove({
   let newCastlingRights = structuredClone(castlingRights);
   let newEnPassantSquare = null;
   let newHalfmoveClock = halfmoveClock;
+  let newFullmoveNumber = fullmoveNumber
   let promotion = null;
 
   const capturedPiece = board[to];
@@ -36,6 +39,7 @@ export function applyPlayerMove({
   prevCastlingRights: structuredClone(castlingRights),
   prevEnPassantSquare: enPassantSquare,
   prevHalfmoveClock: halfmoveClock,
+  prevFullmoveNumber: fullmoveNumber,
   promotion: null,
   special: null,
   };
@@ -53,6 +57,7 @@ export function applyPlayerMove({
       castlingRights: newCastlingRights,
       enPassantSquare: null,
       halfmoveClock: newHalfmoveClock,
+      fullmoveNumber: newFullmoveNumber,
       move,
     });
   }
@@ -67,6 +72,7 @@ export function applyPlayerMove({
       castlingRights: newCastlingRights,
       enPassantSquare: null,
       halfmoveClock: newHalfmoveClock,
+      fullmoveNumber: newFullmoveNumber,
       move,
     });
   }
@@ -94,6 +100,7 @@ export function applyPlayerMove({
 
   updateCastlingRights(from, piece, (v) => (newCastlingRights = v));
   updateHalfmoveClock(from, to, piece, newBoard, (v) => (newHalfmoveClock = v));
+  updateFullmoveNumber(to, newBoard, piece, (v) => (newFullmoveNumber = v));
   updateEnPassantSquare(from, to, piece, (v) => (newEnPassantSquare = v));
 
   /* ================= PROMOTION ================= */
@@ -106,6 +113,7 @@ export function applyPlayerMove({
       castlingRights: newCastlingRights,
       enPassantSquare: newEnPassantSquare,
       halfmoveClock: newHalfmoveClock,
+      fullmoveNumber: newFullmoveNumber,
       promotion,
       move,
       gameResult: null,
@@ -115,7 +123,7 @@ export function applyPlayerMove({
   /* ================= GAME END ================= */
 
   const enemyColor = turn === "white" ? "black" : "white";
-  const gameResult = evaluateGameEnd(turn, newBoard, newHalfmoveClock);
+  const gameResult = evaluateGameEnd(turn, newBoard, newHalfmoveClock, newFullmoveNumber);
 
   return {
     board: newBoard,
@@ -123,6 +131,7 @@ export function applyPlayerMove({
     castlingRights: newCastlingRights,
     enPassantSquare: newEnPassantSquare,
     halfmoveClock: newHalfmoveClock,
+    fullmoveNumber: newFullmoveNumber,
     promotion: null,
     move,
     gameResult,

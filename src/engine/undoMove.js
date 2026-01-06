@@ -4,6 +4,7 @@ export function undoMove({
   castlingRights,
   enPassantSquare,
   halfmoveClock,
+  fullmoveNumber,
 }) {
   if (!lastMove) return null;
 
@@ -63,5 +64,6 @@ export function undoMove({
     castlingRights: lastMove.prevCastlingRights,
     enPassantSquare: lastMove.prevEnPassantSquare,
     halfmoveClock: lastMove.prevHalfmoveClock,
+    fullmoveNumber: lastMove.prevFullMoveNumber
   };
 }

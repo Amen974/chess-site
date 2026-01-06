@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { files, ranks, startP } from "../constant";
 import Square from "./Square";
 import PromotionModal from "./PromotionModal";
@@ -6,6 +6,7 @@ import { isLightSquare } from "../engine/validation/isLightSquare";
 import { applyPlayerMove } from "../engine/applyPlayerMove";
 import { undoMove } from "../engine/undoMove";
 import { exportFEN } from "../engine/exportFEN";
+import { importFEN } from "../engine/importFEN";
 
 const Board = () => {
   const [board, setBoard] = useState({ ...startP });
@@ -13,6 +14,7 @@ const Board = () => {
   const [redoStack, setRedoStack] = useState([]);
   const [turn, setTurn] = useState("white");
   const [dragFrom, setDragFrom] = useState(null);
+  const [fenInput, setFenInput] = useState("");
 
   const [castlingRights, setCastlingRights] = useState({
     white: { kingSide: true, queenSide: true },
@@ -21,6 +23,7 @@ const Board = () => {
 
   const [enPassantSquare, setEnPassantSquare] = useState(null);
   const [halfmoveClock, setHalfmoveClock] = useState(0);
+  const [fullmoveNumber, setFullmoveNumber] = useState(1);  
   const [promotion, setPromotion] = useState(null);
 
   /* ================= DRAG ================= */
@@ -30,7 +33,6 @@ const Board = () => {
     if (!piece) return;
     if (piece.color !== turn) return;
     if (promotion) return;
-
     setDragFrom(from);
   };
 
@@ -47,26 +49,23 @@ const Board = () => {
       castlingRights,
       enPassantSquare,
       halfmoveClock,
+      fullmoveNumber,
     });
 
     setDragFrom(null);
     if (!result) return;
 
+    
+
     setBoard(result.board);
-    setHistory(prev => [...prev, result.move])
+    setHistory((h) => [...h, result.move]);
+    setRedoStack([]);
     setTurn(result.turn);
     setCastlingRights(result.castlingRights);
     setEnPassantSquare(result.enPassantSquare);
     setHalfmoveClock(result.halfmoveClock);
+    setFullmoveNumber(result.fullmoveNumber)
     setPromotion(result.promotion);
-
-    if (result.gameResult) {
-      if (result.gameResult.result === "checkmate") {
-        alert(`${result.gameResult.winner} wins by checkmate`);
-      } else {
-        alert(`Draw by ${result.gameResult.reason}`);
-      }
-    }
   };
 
   /* ================= PROMOTION ================= */
@@ -87,71 +86,105 @@ const Board = () => {
     setTurn(color === "white" ? "black" : "white");
   };
 
-  /* ================= Undo ================= */
+  /* ================= UNDO ================= */
+
   const handleUndo = () => {
-  const lastMove = history.at(-1);
-  if (!lastMove) return;
+    const lastMove = history.at(-1);
+    if (!lastMove) return;
 
-  const prev = undoMove({
-    board,
-    lastMove,
-    castlingRights,
-    enPassantSquare,
-    halfmoveClock,
-  });
+    const prev = undoMove({
+      board,
+      lastMove,
+      castlingRights,
+      enPassantSquare,
+      halfmoveClock,
+      fullmoveNumber,
+    });
 
-  if (!prev) return;
+    if (!prev) return;
 
-  setBoard(prev.board);
-  setTurn(prev.turn);
-  setCastlingRights(prev.castlingRights);
-  setEnPassantSquare(prev.enPassantSquare);
-  setHalfmoveClock(prev.halfmoveClock);
+    setBoard(prev.board);
+    setTurn(prev.turn);
+    setCastlingRights(prev.castlingRights);
+    setEnPassantSquare(prev.enPassantSquare);
+    setHalfmoveClock(prev.halfmoveClock);
+    setFullmoveNumber(prev.fullmoveNumber)
 
-  setHistory(h => h.slice(0, -1));
-  setRedoStack(r => [...r, lastMove]);
-};
-
-/* ================= Redo ================= */
-  const handleRedo = () => {
-  const move = redoStack.at(-1);
-  if (!move) return;
-
-  const result = applyPlayerMove({
-    board,
-    from: move.from,
-    to: move.to,
-    turn,
-    castlingRights,
-    enPassantSquare,
-    halfmoveClock,
-  });
-
-  if (!result) return;
-
-  setBoard(result.board);
-  setTurn(result.turn);
-  setCastlingRights(result.castlingRights);
-  setEnPassantSquare(result.enPassantSquare);
-  setHalfmoveClock(result.halfmoveClock);
-  setPromotion(result.promotion);
-
-  setHistory(h => [...h, result.move]);
-  setRedoStack(r => r.slice(0, -1));
+    setHistory((h) => h.slice(0, -1));
+    setRedoStack((r) => [...r, lastMove]);
   };
 
-  useEffect(() => {
-    const fen = exportFEN({
+  /* ================= REDO ================= */
+
+  const handleRedo = () => {
+    const move = redoStack.at(-1);
+    if (!move) return;
+
+    const result = applyPlayerMove({
+      board,
+      from: move.from,
+      to: move.to,
+      turn,
+      castlingRights,
+      enPassantSquare,
+      halfmoveClock,
+      fullmoveNumber,
+    });
+
+    if (!result) return;
+
+    setBoard(result.board);
+    setTurn(result.turn);
+    setCastlingRights(result.castlingRights);
+    setEnPassantSquare(result.enPassantSquare);
+    setHalfmoveClock(result.halfmoveClock);
+    setFullmoveNumber(result.fullmoveNumber)
+    setPromotion(result.promotion);
+
+    setHistory((h) => [...h, result.move]);
+    setRedoStack((r) => r.slice(0, -1));
+  };
+
+  /* ================= IMPORT FEN ================= */
+
+  const handleImportFEN = () => {
+    try {
+      const data = importFEN(fenInput);
+
+      setBoard(data.board);
+      setTurn(data.turn);
+      setCastlingRights(data.castlingRights);
+      setEnPassantSquare(data.enPassantSquare);
+      setHalfmoveClock(data.halfmove);
+      setFullmoveNumber(data.fullmove)
+
+      setHistory([]);
+      setRedoStack([]);
+      setPromotion(null);
+      setDragFrom(null);
+    } catch (e) {
+      alert("Invalid FEN");
+    }
+  };
+
+  /* ================= EXPORT FEN ================= */
+  const handleCopyFEN = async () => {
+  const fen = exportFEN({
     board,
     turn,
     castlingRights,
     enPassantSquare,
     halfmoveClock,
-    fullmoveNumber: Math.floor(history.length / 2) + 1,
-  }) 
-  },[board])
+    fullmoveNumber,
+  });
 
-  
+  try {
+    await navigator.clipboard.writeText(fen);
+    alert("FEN copied to clipboard");
+  } catch {
+    alert("Failed to copy FEN");
+  }
+};
 
   /* ================= RENDER ================= */
 
@@ -184,8 +217,22 @@ const Board = () => {
         />
       )}
 
-      <button className="bg-red-700 border-2 rounded-2xl p-1 text-white cursor-pointer" onClick={handleUndo}>UNDO</button>
-      <button className="bg-red-700 border-2 rounded-2xl p-1 text-white cursor-pointer" onClick={handleRedo}>REDO</button>
+      <div className="flex gap-2 mt-2">
+        <button className="text-white bg-red-700 rounded-2xl p-2" onClick={handleUndo}>UNDO</button>
+        <button className="text-white bg-red-700 rounded-2xl p-2" onClick={handleRedo}>REDO</button>
+
+        <input
+          className="border-2"
+          value={fenInput}
+          onChange={(e) => setFenInput(e.target.value)}
+          placeholder="Paste FEN here"
+        />
+
+        <button className="text-white bg-red-700 rounded-2xl p-2" onClick={handleImportFEN}>IMPORT</button>
+
+        <button className="text-white bg-red-700 rounded-2xl p-2" onClick={handleCopyFEN}>COPY FEN</button>
+
+      </div>
     </>
   );
 };
