@@ -1,1 +1,22 @@
 @import "tailwindcss";
+
+*{
+  margin: 0;
+  padding: 0;
+}
+
+body{
+   background-color: #101622;
+}
+
+.whiteSquare{
+  background-color: #ebecd0;
+}
+
+.blackSquare{
+  background-color: #3e7c00;
+}
+
+.border-grey-color {
+  border-color: #282e39;
+}

@@ -3,9 +3,9 @@ import Board from "./component/Board"
 function App() {
 
   return (
-    <div className="h-screen w-full flex justify-center items-center">
+    <main>
       <Board/>
-    </div>
+    </main>
   )
 }
 

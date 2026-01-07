@@ -189,8 +189,9 @@ const Board = () => {
   /* ================= RENDER ================= */
 
   return (
-    <>
-      <div className="grid grid-cols-8 border-2">
+    <div className="h-screen w-screen flex justify-center items-center">
+
+      <div className="grid grid-cols-8 border-4 border-grey-color rounded-2xl overflow-hidden">
         {ranks.map((rank) =>
           files.map((file) => {
             const squareId = file + rank;
@@ -200,7 +201,7 @@ const Board = () => {
               <Square
                 key={squareId}
                 id={squareId}
-                color={light ? "bg-green-800" : "bg-white"}
+                color={light ? "blackSquare" : "whiteSquare"}
                 piece={board[squareId]}
                 onDragStart={handleDragStart}
                 onDrop={handleOnDrop}
@@ -217,23 +218,8 @@ const Board = () => {
         />
       )}
 
-      <div className="flex gap-2 mt-2">
-        <button className="text-white bg-red-700 rounded-2xl p-2" onClick={handleUndo}>UNDO</button>
-        <button className="text-white bg-red-700 rounded-2xl p-2" onClick={handleRedo}>REDO</button>
-
-        <input
-          className="border-2"
-          value={fenInput}
-          onChange={(e) => setFenInput(e.target.value)}
-          placeholder="Paste FEN here"
-        />
-
-        <button className="text-white bg-red-700 rounded-2xl p-2" onClick={handleImportFEN}>IMPORT</button>
-
-        <button className="text-white bg-red-700 rounded-2xl p-2" onClick={handleCopyFEN}>COPY FEN</button>
-
-      </div>
-    </>
+      
+    </div>   
   );
 };
 
