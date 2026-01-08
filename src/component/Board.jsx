@@ -14,6 +14,7 @@ const Board = () => {
   const [redoStack, setRedoStack] = useState([]);
   const [turn, setTurn] = useState("white");
   const [dragFrom, setDragFrom] = useState(null);
+  const [selectedSquare, setSelectedSquare] = useState(null);
   const [fenInput, setFenInput] = useState("");
 
   const [castlingRights, setCastlingRights] = useState({
@@ -67,6 +68,50 @@ const Board = () => {
     setFullmoveNumber(result.fullmoveNumber)
     setPromotion(result.promotion);
   };
+
+  /* ================= Click ================= */
+
+  const handleSquareClick = (square) => {
+    if(promotion) return
+
+    if (!selectedSquare){
+      const piece = board[square]
+      if (!piece) return
+      if (piece.color !== turn) return
+      setSelectedSquare(square)
+      return; 
+    }
+    
+    if (square === selectedSquare){
+      setSelectedSquare(null)
+      return
+    }
+
+    const result = applyPlayerMove({
+      board,
+      from: selectedSquare,
+      to: square,
+      turn,
+      castlingRights,
+      enPassantSquare,
+      halfmoveClock,
+      fullmoveNumber,
+    });
+
+    setSelectedSquare(null);
+
+    if (!result) return;
+
+    setBoard(result.board);
+    setHistory((h) => [...h, result.move]);
+    setRedoStack([]);
+    setTurn(result.turn);
+    setCastlingRights(result.castlingRights);
+    setEnPassantSquare(result.enPassantSquare);
+    setHalfmoveClock(result.halfmoveClock);
+    setFullmoveNumber(result.fullmoveNumber);
+    setPromotion(result.promotion);
+  }
 
   /* ================= PROMOTION ================= */
 
@@ -203,6 +248,7 @@ const Board = () => {
                 id={squareId}
                 color={light ? "blackSquare" : "whiteSquare"}
                 piece={board[squareId]}
+                onClick={handleSquareClick}
                 onDragStart={handleDragStart}
                 onDrop={handleOnDrop}
               />
@@ -215,7 +261,7 @@ const Board = () => {
         <PromotionModal
           color={promotion.color}
           onSelect={handlePromotion}
-        />
+        />  
       )}
 
       
