@@ -101,7 +101,7 @@ export function applyPlayerMove({
   updateCastlingRights(from, piece, (v) => (newCastlingRights = v));
   updateHalfmoveClock(from, to, piece, newBoard, (v) => (newHalfmoveClock = v));
   updateFullmoveNumber(to, newBoard, piece, (v) => (newFullmoveNumber = v));
-  updateEnPassantSquare(from, to, piece, (v) => (newEnPassantSquare = v));
+  updateEnPassantSquare(from, to, piece, newBoard, (v) => (newEnPassantSquare = v));
 
   /* ================= PROMOTION ================= */
 

@@ -41,8 +41,14 @@ export function pawnMove(from, to, turn, board, enPassantSquare) {
   }
 
   //en passant
-  if (to === enPassantSquare) return true;
-
+  if (to === enPassantSquare) {
+    const enPassantRank = turn === 'white' ? Number(enPassantSquare[1]) - 1 : Number(enPassantSquare[1]) + 1
+    const enPassantRightFile = String.fromCharCode((enPassantSquare[0].charCodeAt(0) + 1))
+    const enPassantLeftFile = String.fromCharCode((enPassantSquare[0].charCodeAt(0) - 1))
+    if (fromRank === enPassantRank && (fromFile === enPassantRightFile || fromFile === enPassantLeftFile)) {
+      return true;
+    }
+  }
 
   return false;
 }
