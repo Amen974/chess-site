@@ -20,3 +20,11 @@ body{
 .border-grey-color {
   border-color: #282e39;
 }
+
+.bg-grey-color {
+  background-color: #37373764;
+}
+
+.piece-attack {
+  border-color: #37373764;
+}

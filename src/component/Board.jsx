@@ -7,6 +7,7 @@ import { applyPlayerMove } from "../engine/applyPlayerMove";
 import { undoMove } from "../engine/undoMove";
 import { exportFEN } from "../engine/exportFEN";
 import { importFEN } from "../engine/importFEN";
+import { isLegalMove } from "../engine/validation/isLegalMove";
 
 const Board = () => {
   const [board, setBoard] = useState({ ...startP });
@@ -14,6 +15,7 @@ const Board = () => {
   const [redoStack, setRedoStack] = useState([]);
   const [turn, setTurn] = useState("white");
   const [dragFrom, setDragFrom] = useState(null);
+  const [legalMoves, setLegalMoves] = useState([]);
   const [selectedSquare, setSelectedSquare] = useState(null);
   const [fenInput, setFenInput] = useState("");
 
@@ -35,6 +37,7 @@ const Board = () => {
     if (piece.color !== turn) return;
     if (promotion) return;
     setDragFrom(from);
+    setLegalMoves(computeLegalMoves(from));
   };
 
   /* ================= DROP ================= */
@@ -54,9 +57,8 @@ const Board = () => {
     });
 
     setDragFrom(null);
+    setLegalMoves([]);
     if (!result) return;
-
-    
 
     setBoard(result.board);
     setHistory((h) => [...h, result.move]);
@@ -79,6 +81,7 @@ const Board = () => {
       if (!piece) return
       if (piece.color !== turn) return
       setSelectedSquare(square)
+      setLegalMoves(computeLegalMoves(square));
       return; 
     }
     
@@ -99,6 +102,7 @@ const Board = () => {
     });
 
     setSelectedSquare(null);
+    setLegalMoves([]);
 
     if (!result) return;
 
@@ -112,6 +116,22 @@ const Board = () => {
     setFullmoveNumber(result.fullmoveNumber);
     setPromotion(result.promotion);
   }
+
+  const computeLegalMoves = (from) => {
+  const moves = [];
+
+  for (const r of ranks) {
+    for (const f of files) {
+      const to = f + r;
+      if (isLegalMove(from, to, board, turn, enPassantSquare)) {
+        moves.push(to);
+      }
+    }
+  }
+
+  return moves;
+};
+
 
   /* ================= PROMOTION ================= */
 
@@ -251,6 +271,8 @@ const Board = () => {
                 onClick={handleSquareClick}
                 onDragStart={handleDragStart}
                 onDrop={handleOnDrop}
+                isSelected={squareId === selectedSquare}
+                isLegalMove={legalMoves.includes(squareId)}
               />
             );
           })

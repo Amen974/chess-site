@@ -27,11 +27,11 @@ export function bishopMove (from, to, turn, board){
 
       currentFile += fileStep;
       currentRank += rankStep;
+    }
 
-      if (targetPiece && targetPiece.color === turn) {
+    if (targetPiece && targetPiece.color === turn) {
         return false;
       }
-    }
 
     return true;
   };
