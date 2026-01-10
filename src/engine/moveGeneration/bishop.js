@@ -12,6 +12,10 @@ export function bishopMove (from, to, turn, board){
 
     if (fileDiff !== rankDiff) return false;
 
+    if (targetPiece && targetPiece.color === turn) {
+        return false;
+      }
+
     const fileStep = toFile > fromFile ? 1 : -1;
     const rankStep = toRank > fromRank ? 1 : -1;
 
@@ -27,11 +31,11 @@ export function bishopMove (from, to, turn, board){
 
       currentFile += fileStep;
       currentRank += rankStep;
-    }
 
-    if (targetPiece && targetPiece.color === turn) {
+      if (targetPiece && targetPiece.color === turn) {
         return false;
       }
+    }
 
     return true;
   };

@@ -10,7 +10,6 @@ import { isKingInCheck } from "./isKingInCheck";
 export function isLegalMove(from, to, board, turn, enPassantSquare) {
   const piece = board[from];
   if (!piece) return false;
-  if (board[to] && board[to].color === turn) return false
 
   let valid = false;
 
