@@ -69,6 +69,14 @@ const Board = () => {
     setHalfmoveClock(result.halfmoveClock);
     setFullmoveNumber(result.fullmoveNumber)
     setPromotion(result.promotion);
+
+    if (result.gameResult) {
+      if (result.gameResult.result === "checkmate") {
+        alert(`${result.gameResult.winner} wins by checkmate`);
+      } else {
+        alert(`Draw by ${result.gameResult.reason}`);
+      }
+    }
   };
 
   /* ================= Click ================= */
@@ -115,6 +123,14 @@ const Board = () => {
     setHalfmoveClock(result.halfmoveClock);
     setFullmoveNumber(result.fullmoveNumber);
     setPromotion(result.promotion);
+
+    if (result.gameResult) {
+      if (result.gameResult.result === "checkmate") {
+        alert(`${result.gameResult.winner} wins by checkmate`);
+      } else {
+        alert(`Draw by ${result.gameResult.reason}`);
+      }
+    }
   }
 
   const computeLegalMoves = (from) => {

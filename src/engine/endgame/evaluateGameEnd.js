@@ -11,7 +11,7 @@ export function evaluateGameEnd(turn, board, halfmoveClock) {
   }
 
   if (isStalemate(enemy, board)) {
-    return { result: "stalemate" };
+    return { result: "draw", reason: "stalemate" };
   }
 
   if (isInsufficientMaterial(board)) {
