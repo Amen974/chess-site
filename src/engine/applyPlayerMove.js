@@ -1,4 +1,6 @@
 import { evaluateGameEnd } from "./endgame/evaluateGameEnd";
+import { getRepetitionResult } from "./endgame/getRepetitionResult";
+import { exportFEN } from "./exportFEN";
 import { updateCastlingRights } from "./state/updateCastlingRights";
 import { updateEnPassantSquare } from "./state/updateEnPassantSquare";
 import { updateFullmoveNumber } from "./state/updateFullmoveNumber";
@@ -123,7 +125,22 @@ export function applyPlayerMove({
   /* ================= GAME END ================= */
 
   const enemyColor = turn === "white" ? "black" : "white";
-  const gameResult = evaluateGameEnd(turn, newBoard, newHalfmoveClock, newFullmoveNumber);
+
+  const fen = exportFEN({
+    board: newBoard,
+    turn: enemyColor,
+    castlingRights: newCastlingRights,
+    enPassantSquare: newEnPassantSquare,
+    halfmoveClock: newHalfmoveClock,
+    fullmoveNumber: newFullmoveNumber,
+  });
+
+  const repetitionResult = getRepetitionResult(fen);
+
+  const gameResult =
+    repetitionResult
+      ? { result: "draw", reason: "threefold repetition" }
+      : evaluateGameEnd(turn, newBoard, newHalfmoveClock);
 
   return {
     board: newBoard,
