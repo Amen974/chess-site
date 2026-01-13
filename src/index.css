@@ -1,12 +1,9 @@
 @import "tailwindcss";
 
-*{
+body{
   margin: 0;
   padding: 0;
-}
-
-body{
-   background-color: #101622;
+  background-color: #101622;
 }
 
 .whiteSquare{
@@ -25,6 +22,18 @@ body{
   background-color: #37373764;
 }
 
-.piece-attack {
-  border-color: #37373764;
+.button-style{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--spacing) * 2);
+  padding-inline: calc(var(--spacing) * 4);
+  padding-block: calc(var(--spacing) * 2);
+  background-color: #1e232e;
+  border-radius: var(--radius-lg);
+  border-style: var(--tw-border-style);
+  border-width: 1px;
+  border-color: var(--color-slate-700);
+  color: var(--color-slate-300)
 }
