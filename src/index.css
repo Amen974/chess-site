@@ -22,6 +22,10 @@ body{
   background-color: #37373764;
 }
 
+.piece-attack {
+  border-color: #37373764;
+}
+
 .button-style{
   display: flex;
   flex-direction: column;

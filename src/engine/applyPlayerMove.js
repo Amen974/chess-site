@@ -9,7 +9,7 @@ import { canCastleKingSide } from "./validation/canCastleKingSide";
 import { canCastleQueenSide } from "./validation/canCastleQueenSide";
 import { isLegalMove } from "./validation/isLegalMove";
 import { isPromotionSquare } from "./validation/isPromotionSquare";
-
+import { generateSAN } from "./generateSAN";
 
 export function applyPlayerMove({
   board,
@@ -28,31 +28,46 @@ export function applyPlayerMove({
   let newCastlingRights = structuredClone(castlingRights);
   let newEnPassantSquare = null;
   let newHalfmoveClock = halfmoveClock;
-  let newFullmoveNumber = fullmoveNumber
+  let newFullmoveNumber = fullmoveNumber;
   let promotion = null;
 
   const capturedPiece = board[to];
 
   const move = {
-  from,
-  to,
-  piece,
-  captured: capturedPiece,
-  prevCastlingRights: structuredClone(castlingRights),
-  prevEnPassantSquare: enPassantSquare,
-  prevHalfmoveClock: halfmoveClock,
-  prevFullmoveNumber: fullmoveNumber,
-  promotion: null,
-  special: null,
+    from,
+    to,
+    piece,
+    captured: capturedPiece,
+    san: null,
+    fen: null,
+    prevCastlingRights: structuredClone(castlingRights),
+    prevEnPassantSquare: enPassantSquare,
+    prevHalfmoveClock: halfmoveClock,
+    prevFullmoveNumber: fullmoveNumber,
+    promotion: null,
+    special: null,
   };
-
 
   /* ================= CASTLING ================= */
 
   if (canCastleKingSide(piece, from, to, board, castlingRights)) {
     newBoard = handleCastle(board, piece.color, "king");
-    move.special = "castle-king"; 
+    move.special = "castle-king";
+    move.san = "O-O";
+
     updateCastlingRights(from, piece, (v) => (newCastlingRights = v));
+
+    const enemyColor = turn === "white" ? "black" : "white";
+
+    move.fen = exportFEN({
+      board: newBoard,
+      turn: enemyColor,
+      castlingRights: castlingRights,
+      enPassantSquare: null,
+      halfmoveClock: newHalfmoveClock,
+      fullmoveNumber: newFullmoveNumber,
+    });
+
     return finalizeTurn({
       board: newBoard,
       turn,
@@ -67,7 +82,21 @@ export function applyPlayerMove({
   if (canCastleQueenSide(piece, from, to, board, castlingRights)) {
     newBoard = handleCastle(board, piece.color, "queen");
     move.special = "castle-queen";
+    move.san = "O-O-O";
+
     updateCastlingRights(from, piece, (v) => (newCastlingRights = v));
+
+    const enemyColor = turn === "white" ? "black" : "white";
+
+    move.fen = exportFEN({
+      board: newBoard,
+      turn: enemyColor,
+      castlingRights: castlingRights,
+      enPassantSquare: null,
+      halfmoveClock: newHalfmoveClock,
+      fullmoveNumber: newFullmoveNumber,
+    });
+
     return finalizeTurn({
       board: newBoard,
       turn,
@@ -86,7 +115,7 @@ export function applyPlayerMove({
   newBoard[to] = piece;
   newBoard[from] = null;
 
-  /* ================= EN PASSANT CAPTURE ================= */
+  /* ================= EN PASSANT ================= */
 
   if (piece.type === "pawn" && to === enPassantSquare) {
     const dir = piece.color === "white" ? -1 : 1;
@@ -94,7 +123,6 @@ export function applyPlayerMove({
 
     move.captured = board[capturedSquare];
     move.special = "en-passant";
-    
     newBoard[capturedSquare] = null;
   }
 
@@ -109,6 +137,18 @@ export function applyPlayerMove({
 
   if (isPromotionSquare(to, newBoard)) {
     promotion = { square: to, color: piece.color };
+    move.promotion = promotion;
+
+    move.san = generateSAN(
+      from,
+      to,
+      piece,
+      board,
+      turn,
+      promotion,
+      enPassantSquare
+    );
+
     return {
       board: newBoard,
       turn,
@@ -122,25 +162,36 @@ export function applyPlayerMove({
     };
   }
 
-  /* ================= GAME END ================= */
+  /* ================= SAN + FEN ================= */
+
+  move.san = generateSAN(
+    from,
+    to,
+    piece,
+    board,
+    turn,
+    null,
+    enPassantSquare
+  );
 
   const enemyColor = turn === "white" ? "black" : "white";
 
-  const fen = exportFEN({
+  move.fen = exportFEN({
     board: newBoard,
     turn: enemyColor,
-    castlingRights: newCastlingRights,
+    castlingRights: castlingRights,
     enPassantSquare: newEnPassantSquare,
     halfmoveClock: newHalfmoveClock,
     fullmoveNumber: newFullmoveNumber,
   });
 
-  const repetitionResult = getRepetitionResult(fen);
+  /* ================= GAME END ================= */
 
-  const gameResult =
-    repetitionResult
-      ? { result: "draw", reason: "threefold repetition" }
-      : evaluateGameEnd(turn, newBoard, newHalfmoveClock);
+  const repetitionResult = getRepetitionResult(move.fen);
+
+  const gameResult = repetitionResult
+    ? { result: "draw", reason: "threefold repetition" }
+    : evaluateGameEnd(turn, newBoard, newHalfmoveClock);
 
   return {
     board: newBoard,
