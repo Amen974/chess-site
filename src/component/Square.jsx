@@ -4,7 +4,7 @@ const Square = ({ piece, color, id, onDrop, onDragStart, onClick, isSelected, is
   return (
     <div
       className={`relative flex justify-center items-center
-    w-10 h-10 md:h-15 md:w-15 2xl:h-18 2xl:w-18
+    w-10 h-10 sm:w-14 sm:h-14 lg:w-18 lg:h-18 2xl:w-20 2xl:h-20
     ${color}
     ${isSelected ? "" : ""}
   `}
@@ -27,7 +27,7 @@ const Square = ({ piece, color, id, onDrop, onDragStart, onClick, isSelected, is
           alt={piece.type}
           draggable = {!isTouch}
           onDragStart={() => onDragStart(id)}
-          className="cursor-grab w-9 h-9 md:w-16 md:h-16 "
+          className="cursor-grab w-9 h-9 sm:w-12 sm:h-12 lg:w-16 lg:h-16 2xl:w-18 2xl:h-18"
         />
       )}
     </div>
