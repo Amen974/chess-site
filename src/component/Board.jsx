@@ -31,15 +31,20 @@ const Board = () => {
 
   /* ================= AUTO SCROLL ================= */
   
-  const sanRef = useRef(null);
-  useEffect(() => {
-  const el = sanRef.current;
-  if (!el) return;
+  const sanRefMobile = useRef(null);
+  const sanRefDesktop = useRef(null);
 
-  el.scrollLeft = el.scrollWidth;
-
-  el.scrollTop = el.scrollHeight;
-  }, [history.length]);
+useEffect(() => {
+  const elMobile = sanRefMobile.current;
+  if (elMobile) {
+    elMobile.scrollLeft = elMobile.scrollWidth;
+  }
+  
+  const elDesktop = sanRefDesktop.current;
+  if (elDesktop) {
+    elDesktop.scrollTop = elDesktop.scrollHeight;
+  }
+}, [history.length]);
 
 
   /* ================= DRAG ================= */
@@ -330,7 +335,7 @@ const Board = () => {
         )}
 
         <div className="flex flex-col gap-2">
-          <div className="flex lg:hidden justify-center max-w-80 text-slate-400 whitespace-nowrap overflow-x-auto no-scrollbar" ref={sanRef}>
+          <div className="flex lg:hidden max-w-80 text-slate-400 whitespace-nowrap overflow-x-auto no-scrollbar" ref={sanRefMobile}>
             {history.map((move, index) => {
               const moveNumber = Math.floor(index / 2) + 1;
               const isWhite = index % 2 === 0;
@@ -354,7 +359,7 @@ const Board = () => {
             })}
           </div>
 
-          <div className="hidden lg:block max-w-100 h-110 2xl:h-125 bg-[#1e232e] border border-slate-700 rounded-lg overflow-y-auto no-scrollbar" ref={sanRef}>
+          <div className="hidden lg:block max-w-100 h-110 2xl:h-125 bg-[#1e232e] border border-slate-700 rounded-lg overflow-y-auto no-scrollbar" ref={sanRefDesktop}>
             {Array.from({ length: Math.ceil(history.length / 2) }).map(
               (_, i) => {
                 const whiteMove = history[i * 2];
