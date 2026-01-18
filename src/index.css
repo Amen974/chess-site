@@ -39,7 +39,8 @@ body{
   border-style: var(--tw-border-style);
   border-width: 1px;
   border-color: var(--color-slate-700);
-  color: var(--color-slate-300)
+  color: var(--color-slate-300);
+  cursor: pointer;
 }
 
 @media (min-width: 640px) {

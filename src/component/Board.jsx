@@ -29,6 +29,10 @@ const Board = () => {
   const [fullmoveNumber, setFullmoveNumber] = useState(1);
   const [promotion, setPromotion] = useState(null);
 
+  const [isFlipped, setIsFlipped] = useState(false);
+  const renderRanks = isFlipped ? [...ranks].reverse() : ranks;
+  const renderFiles = isFlipped ? [...files].reverse() : files;
+
   /* ================= AUTO SCROLL ================= */
   
   const sanRefMobile = useRef(null);
@@ -308,27 +312,28 @@ useEffect(() => {
     <div className="flex justify-center items-center h-screen w-screen">
       <div className="flex flex-wrap gap-2 justify-center md:items-center">
         <div className="grid grid-cols-8 border-4 border-grey-color rounded-2xl overflow-hidden">
-          {ranks.map((rank) =>
-            files.map((file) => {
-              const squareId = file + rank;
-              const light = isLightSquare(squareId);
+          {renderRanks.map((rank) =>
+            renderFiles.map((file) => {
+            const squareId = file + rank;
+            const light = isLightSquare(squareId);
 
-              return (
-                <Square
-                  key={squareId}
-                  id={squareId}
-                  color={light ? "blackSquare" : "whiteSquare"}
-                  piece={board[squareId]}
-                  onClick={handleSquareClick}
-                  onDragStart={handleDragStart}
-                  onDrop={handleOnDrop}
-                  isSelected={squareId === selectedSquare}
-                  isLegalMove={legalMoves.includes(squareId)}
-                />
+            return (
+              <Square
+                key={squareId}
+                id={squareId}
+                color={light ? "blackSquare" : "whiteSquare"}
+                piece={board[squareId]}
+                onClick={handleSquareClick}
+                onDragStart={handleDragStart}
+                onDrop={handleOnDrop}
+                isSelected={squareId === selectedSquare}
+                isLegalMove={legalMoves.includes(squareId)}
+              />
               );
             })
           )}
         </div>
+
 
         {promotion && (
           <PromotionModal color={promotion.color} onSelect={handlePromotion} />
@@ -416,10 +421,14 @@ useEffect(() => {
               <span className="text-xs font-bold uppercase">RESIGN</span>
             </button>
 
-            <button className="button-style transition-all active:scale-95 shadow-sm">
+            <button
+              onClick={() => setIsFlipped((f) => !f)}
+              className="button-style transition-all active:scale-95 shadow-sm"
+            >
               <img src="/SVG/flip.svg" alt="Flip" className="w-5 h-5" />
               <span className="text-xs font-bold uppercase">FLIP</span>
             </button>
+
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2 p-2 sm:p-3 rounded-lg bg-[#1e232e] border border-slate-700 shadow-sm">
@@ -438,7 +447,7 @@ useEffect(() => {
               />
             </div>
             <button
-              className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded bg-[#282e39] text-xs font-semibold text-slate-300 hover:bg-[#343a46] transition-colors border border-slate-600"
+              className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded bg-[#282e39] text-xs font-semibold text-slate-300 hover:bg-[#343a46] transition-colors border border-slate-600 cursor-pointer"
               onClick={handleCopyFEN}
             >
               <img
