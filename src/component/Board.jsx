@@ -33,6 +33,15 @@ const Board = () => {
   const renderRanks = isFlipped ? [...ranks].reverse() : ranks;
   const renderFiles = isFlipped ? [...files].reverse() : files;
 
+    const state = {
+    board,
+    turn,
+    castlingRights,
+    enPassantSquare,
+    halfmoveClock,
+    fullmoveNumber,
+  }
+
   /* ================= AUTO SCROLL ================= */
   
   const sanRefMobile = useRef(null);
@@ -68,14 +77,9 @@ useEffect(() => {
     if (!dragFrom) return;
 
     const result = applyPlayerMove({
-      board,
       from: dragFrom,
       to,
-      turn,
-      castlingRights,
-      enPassantSquare,
-      halfmoveClock,
-      fullmoveNumber,
+      state
     });
 
     setDragFrom(null);
@@ -121,14 +125,9 @@ useEffect(() => {
     }
 
     const result = applyPlayerMove({
-      board,
       from: selectedSquare,
       to: square,
-      turn,
-      castlingRights,
-      enPassantSquare,
-      halfmoveClock,
-      fullmoveNumber,
+      state
     });
 
     setSelectedSquare(null);
@@ -223,14 +222,9 @@ useEffect(() => {
     if (!move) return;
 
     const result = applyPlayerMove({
-      board,
       from: move.from,
       to: move.to,
-      turn,
-      castlingRights,
-      enPassantSquare,
-      halfmoveClock,
-      fullmoveNumber,
+      state
     });
 
     if (!result) return;
