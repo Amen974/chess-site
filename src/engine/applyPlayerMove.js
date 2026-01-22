@@ -32,11 +32,9 @@ export function applyPlayerMove({
   /* ================= CASTLING ================= */
 
   if (canCastleKingSide(piece, from, to, state.board, state.castlingRights)) {
-    nextState.board = handleCastle(state.board, piece.color, "king");
+    nextState.board = handleCastle(nextState.board, piece.color, "king");
     move.special = "castle-king";
     move.san = "O-O";
-
-    updateCastlingRights(from, piece, (v) => (nextState.castlingRights = v));
 
     move.fen = exportFEN({
       board: nextState.board,
@@ -62,8 +60,6 @@ export function applyPlayerMove({
     nextState.board = handleCastle(nextState.board, piece.color, "queen");
     move.special = "castle-queen";
     move.san = "O-O-O";
-
-    updateCastlingRights(from, piece, (v) => (nextState.castlingRights = v));
 
     const enemyColor = state.turn === "white" ? "black" : "white";
 
@@ -108,9 +104,9 @@ export function applyPlayerMove({
   /* ================= STATE UPDATES ================= */
 
   nextState.castlingRights = updateCastlingRights(nextState.castlingRights, from, piece);
-  updateHalfmoveClock(from, to, piece, nextState.board, (v) => (nextState.halfmoveClock = v));
-  updateFullmoveNumber(to, nextState.board, piece, (v) => (nextState.fullmoveNumber = v));
-  updateEnPassantSquare(from, to, piece, nextState.board, (v) => (nextState.enPassantSquare = v));
+  nextState.halfmoveClock = updateHalfmoveClock(nextState.halfmoveClock, piece, move.captured);
+  nextState.fullmoveNumber = updateFullmoveNumber(state.fullmoveNumber, state.turn);
+  nextState.enPassantSquare = updateEnPassantSquare(from, to, piece, nextState.board);
 
   /* ================= PROMOTION ================= */
 

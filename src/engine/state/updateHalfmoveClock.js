@@ -1,16 +1,11 @@
 export function updateHalfmoveClock(
-  from,
-  to,
+  previousHalfmoveClock,
   piece,
-  boardBefore,
-  setHalfmoveClock
+  capturedPiece
 ) {
-  const isPawnMove = piece.type === "pawn";
-  const isCapture = boardBefore[to] !== null;
-
-  if (isPawnMove || isCapture) {
-    setHalfmoveClock(0);
-  } else {
-    setHalfmoveClock((prev) => prev + 1);
+  if (piece.type === "pawn" || capturedPiece) {
+    return 0;
   }
+
+  return previousHalfmoveClock + 1;
 }
