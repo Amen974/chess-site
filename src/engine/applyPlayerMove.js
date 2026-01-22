@@ -12,12 +12,12 @@ import { isPromotionSquare } from "./validation/isPromotionSquare";
 import { generateSAN } from "./generateSAN";
 import { createMoveSnapshot } from "./createMoveSnapshot";
 import { createNextState } from "./createNextState";
+import { handleCastle } from "./helpers/handleCastle";
 
 export function applyPlayerMove({
   from,
   to,
   state
-  
 }) {
   const piece = state.board[from];
   if (!piece || piece.color !== state.turn) return null;
@@ -27,6 +27,8 @@ export function applyPlayerMove({
 
   let promotion = null;
 
+  const enemyColor = state.turn === "white" ? "black" : "white";
+
   /* ================= CASTLING ================= */
 
   if (canCastleKingSide(piece, from, to, state.board, state.castlingRights)) {
@@ -35,8 +37,6 @@ export function applyPlayerMove({
     move.san = "O-O";
 
     updateCastlingRights(from, piece, (v) => (nextState.castlingRights = v));
-
-    const enemyColor = state.turn === "white" ? "black" : "white";
 
     move.fen = exportFEN({
       board: nextState.board,
@@ -59,7 +59,7 @@ export function applyPlayerMove({
   }
 
   if (canCastleQueenSide(piece, from, to, state.board, state.castlingRights)) {
-    nextState.board = handleCastle(state.board, piece.color, "queen");
+    nextState.board = handleCastle(nextState.board, piece.color, "queen");
     move.special = "castle-queen";
     move.san = "O-O-O";
 
@@ -107,7 +107,7 @@ export function applyPlayerMove({
 
   /* ================= STATE UPDATES ================= */
 
-  updateCastlingRights(from, piece, (v) => (nextState.castlingRights = v));
+  nextState.castlingRights = updateCastlingRights(nextState.castlingRights, from, piece);
   updateHalfmoveClock(from, to, piece, nextState.board, (v) => (nextState.halfmoveClock = v));
   updateFullmoveNumber(to, nextState.board, piece, (v) => (nextState.fullmoveNumber = v));
   updateEnPassantSquare(from, to, piece, nextState.board, (v) => (nextState.enPassantSquare = v));
@@ -153,8 +153,6 @@ export function applyPlayerMove({
     state.enPassantSquare
   );
 
-  const enemyColor = state.turn === "white" ? "black" : "white";
-
   move.fen = exportFEN({
     board: nextState.board,
     turn: enemyColor,
@@ -183,36 +181,6 @@ export function applyPlayerMove({
     move,
     gameResult,
   };
-}
-
-/* ================= HELPERS ================= */
-
-function handleCastle(board, color, side) {
-  const next = { ...board };
-
-  if (color === "white") {
-    if (side === "king") {
-      next.g1 = next.e1;
-      next.f1 = next.h1;
-      next.e1 = next.h1 = null;
-    } else {
-      next.c1 = next.e1;
-      next.d1 = next.a1;
-      next.e1 = next.a1 = null;
-    }
-  } else {
-    if (side === "king") {
-      next.g8 = next.e8;
-      next.f8 = next.h8;
-      next.e8 = next.h8 = null;
-    } else {
-      next.c8 = next.e8;
-      next.d8 = next.a8;
-      next.e8 = next.a8 = null;
-    }
-  }
-
-  return next;
 }
 
 function finalizeTurn(state) {

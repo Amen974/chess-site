@@ -1,7 +1,6 @@
 import { isKingInCheck } from "./isKingInCheck";
 import { isSquareAttacked } from "./isSquareAttacked";
 
-
 export function canCastleKingSide(piece, from, to, board, castlingRights) {
   if (
     piece.type === "king" &&
