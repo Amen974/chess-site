@@ -32,56 +32,57 @@ export function applyPlayerMove({
   /* ================= CASTLING ================= */
 
   if (canCastleKingSide(piece, from, to, state.board, state.castlingRights)) {
-    nextState.board = handleCastle(nextState.board, piece.color, "king");
-    move.special = "castle-king";
-    move.san = "O-O";
+  nextState.board = handleCastle(nextState.board, piece.color, "king");
 
-    move.fen = exportFEN({
-      board: nextState.board,
-      turn: enemyColor,
-      castlingRights: nextState.castlingRights,
-      enPassantSquare: null,
-      halfmoveClock: nextState.halfmoveClock,
-      fullmoveNumber: nextState.fullmoveNumber,
-    });
+  nextState.castlingRights = updateCastlingRights(
+    nextState.castlingRights,
+    from,
+    piece
+  );
 
-    return finalizeTurn({
-      board: nextState.board,
-      turn: nextState.turn,
-      castlingRights: nextState.castlingRights,
-      enPassantSquare: null,
-      halfmoveClock: nextState.halfmoveClock,
-      fullmoveNumber: nextState.fullmoveNumber,
-      move,
-    });
-  }
+  move.special = "castle-king";
+  move.san = "O-O";
+
+  return {
+    board: nextState.board,
+    turn: enemyColor,
+    castlingRights: nextState.castlingRights,
+    enPassantSquare: null,
+    halfmoveClock: nextState.halfmoveClock,
+    fullmoveNumber: nextState.fullmoveNumber,
+    promotion: null,
+    move,
+    gameResult: null,
+  };
+}
+
+
 
   if (canCastleQueenSide(piece, from, to, state.board, state.castlingRights)) {
-    nextState.board = handleCastle(nextState.board, piece.color, "queen");
-    move.special = "castle-queen";
-    move.san = "O-O-O";
+  nextState.board = handleCastle(nextState.board, piece.color, "queen");
 
-    const enemyColor = state.turn === "white" ? "black" : "white";
+  nextState.castlingRights = updateCastlingRights(
+  nextState.castlingRights,
+  from,
+  piece
+);
 
-    move.fen = exportFEN({
-      board: nextState.board,
-      turn: enemyColor,
-      castlingRights: nextState.castlingRights,
-      enPassantSquare: null,
-      halfmoveClock: nextState.halfmoveClock,
-      fullmoveNumber: nextState.fullmoveNumber,
-    });
+  move.special = "castle-queen";
+  move.san = "O-O-O";
 
-    return finalizeTurn({
-      board: nextState.board,
-      turn: state.turn,
-      castlingRights: nextState.castlingRights,
-      enPassantSquare: null,
-      halfmoveClock: nextState.halfmoveClock,
-      fullmoveNumber: nextState.fullmoveNumber,
-      move,
-    });
-  }
+  return {
+    board: nextState.board,
+    turn: enemyColor,
+    castlingRights: nextState.castlingRights,
+    enPassantSquare: null,
+    halfmoveClock: nextState.halfmoveClock,
+    fullmoveNumber: nextState.fullmoveNumber,
+    promotion: null,
+    move,
+    gameResult: null,
+  };
+}
+
 
   /* ================= NORMAL MOVE ================= */
 
