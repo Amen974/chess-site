@@ -39,7 +39,7 @@ export function applyPlayerMove({
     move.fen = exportFEN({
       board: nextState.board,
       turn: enemyColor,
-      castlingRights: state.castlingRights,
+      castlingRights: nextState.castlingRights,
       enPassantSquare: null,
       halfmoveClock: nextState.halfmoveClock,
       fullmoveNumber: nextState.fullmoveNumber,
@@ -66,7 +66,7 @@ export function applyPlayerMove({
     move.fen = exportFEN({
       board: nextState.board,
       turn: enemyColor,
-      castlingRights: state.castlingRights,
+      castlingRights: nextState.castlingRights,
       enPassantSquare: null,
       halfmoveClock: nextState.halfmoveClock,
       fullmoveNumber: nextState.fullmoveNumber,
@@ -152,7 +152,7 @@ export function applyPlayerMove({
   move.fen = exportFEN({
     board: nextState.board,
     turn: enemyColor,
-    castlingRights: state.castlingRights,
+    castlingRights: nextState.castlingRights,
     enPassantSquare: nextState.enPassantSquare,
     halfmoveClock: nextState.halfmoveClock,
     fullmoveNumber: nextState.fullmoveNumber,
@@ -164,7 +164,7 @@ export function applyPlayerMove({
 
   const gameResult = repetitionResult
     ? { result: "draw", reason: "threefold repetition" }
-    : evaluateGameEnd(state.turn, nextState.board, nextState.halfmoveClock);
+    : evaluateGameEnd(nextState.turn, nextState.board, nextState.halfmoveClock);
 
   return {
     board: nextState.board,

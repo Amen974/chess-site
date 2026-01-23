@@ -1,5 +1,3 @@
-
-
 const pieces = ["queen", "rook", "bishop", "knight"];
 
 const PromotionModal = ({ color, onSelect }) => {
