@@ -1,13 +1,11 @@
 import { isSquareAttacked } from "./isSquareAttacked";
 
-
-
-export function isKingInCheck(color, board) {
+export function isKingInCheck(turn, board) {
   let kingSquare = null;
 
   for (const square in board) {
     const piece = board[square];
-    if (piece && piece.type === "king" && piece.color === color) {
+    if (piece && piece.type === "king" && piece.color === turn) {
       kingSquare = square;
       break;
     }
@@ -15,6 +13,6 @@ export function isKingInCheck(color, board) {
 
   if (!kingSquare) return false;
 
-  const enemyColor = color === "white" ? "black" : "white";
+  const enemyColor = turn === "white" ? "black" : "white";
   return isSquareAttacked(kingSquare, enemyColor, board);
 }

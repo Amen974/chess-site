@@ -4,9 +4,9 @@ import { isInsufficientMaterial } from "./isInsufficientMaterial";
 import { isStalemate } from "./isStalemate";
 
 
-export function evaluateGameEnd(turn, enemy, board, halfmoveClock, fen) {
+export function evaluateGameEnd(turn, enemy, board, halfmoveClock, fen, enPassantSquare) {
 
-  if (isCheckmate(enemy, board)) {
+  if (isCheckmate(enemy, board, enPassantSquare)) {
     return { result: "checkmate", winner: turn };
   }
 

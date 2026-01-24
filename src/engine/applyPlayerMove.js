@@ -118,7 +118,7 @@ export function applyPlayerMove({ from, to, state }) {
 
   move.fen = fen;
 
-  const gameResult = evaluateGameEnd(state.turn, enemyColor, nextState.board, nextState.halfmoveClock, fen);
+  const gameResult = evaluateGameEnd(state.turn, enemyColor, nextState.board, nextState.halfmoveClock, fen, nextState.enPassantSquare);
 
   return {
     board: nextState.board,

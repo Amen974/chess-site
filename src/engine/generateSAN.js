@@ -66,7 +66,7 @@ export function generateSAN(
   newBoard[to] = piece;
   newBoard[from] = null;
 
-  if (isCheckmate(enemyColor, newBoard)) checkSuffix = "#";
+  if (isCheckmate(enemyColor, newBoard, enPassantSquare)) checkSuffix = "#";
   else if (isKingInCheck(enemyColor, newBoard)) checkSuffix = "+";
 
   return (
