@@ -3,7 +3,7 @@ export function updateHalfmoveClock(
   piece,
   capturedPiece
 ) {
-  if (piece.type === "pawn" || capturedPiece) {
+  if (piece.type === "pawn" || capturedPiece !== null) {
     return 0;
   }
 

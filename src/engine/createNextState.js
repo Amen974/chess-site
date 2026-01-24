@@ -3,8 +3,9 @@ export function createNextState(state) {
     board: { ...state.board },
     turn: state.turn,
     castlingRights: structuredClone(state.castlingRights),
-    enPassantSquare: null,
+    enPassantSquare: state.enPassantSquare,
     halfmoveClock: state.halfmoveClock,
     fullmoveNumber: state.fullmoveNumber,
+    promotion: state.promotion
   };
 }

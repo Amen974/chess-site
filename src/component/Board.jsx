@@ -42,6 +42,7 @@ const Board = () => {
     enPassantSquare,
     halfmoveClock,
     fullmoveNumber,
+    promotion,
   };
 
   const fen = exportFEN({
@@ -184,6 +185,15 @@ const Board = () => {
       setEnPassantSquare(aiResult.enPassantSquare);
       setHalfmoveClock(aiResult.halfmoveClock);
       setFullmoveNumber(aiResult.fullmoveNumber);
+
+      if (aiResult.gameResult) {
+        if (aiResult.gameResult.result === "checkmate") {
+          alert(`${aiResult.gameResult.winner} wins by checkmate`);
+        } else {
+          alert(`Draw by ${aiResult.gameResult.reason}`);
+        }
+        return;
+      }
     }
 
     if (result.gameResult) {
@@ -274,6 +284,14 @@ const Board = () => {
       setEnPassantSquare(aiResult.enPassantSquare);
       setHalfmoveClock(aiResult.halfmoveClock);
       setFullmoveNumber(aiResult.fullmoveNumber);
+
+      if (aiResult.gameResult) {
+        if (aiResult.gameResult.result === "checkmate") {
+          alert(`${aiResult.gameResult.winner} wins by checkmate`);
+        } else {
+          alert(`Draw by ${aiResult.gameResult.reason}`);
+        }
+      }
     }
 
     if (result.gameResult) {

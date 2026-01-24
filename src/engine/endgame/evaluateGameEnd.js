@@ -1,10 +1,10 @@
+import { getRepetitionResult } from "./getRepetitionResult";
 import { isCheckmate } from "./isCheckmate";
 import { isInsufficientMaterial } from "./isInsufficientMaterial";
 import { isStalemate } from "./isStalemate";
 
 
-export function evaluateGameEnd(turn, board, halfmoveClock) {
-  const enemy = turn === "white" ? "black" : "white";
+export function evaluateGameEnd(turn, enemy, board, halfmoveClock, fen) {
 
   if (isCheckmate(enemy, board)) {
     return { result: "checkmate", winner: turn };
@@ -20,6 +20,10 @@ export function evaluateGameEnd(turn, board, halfmoveClock) {
 
   if (halfmoveClock >= 100) {
     return { result: "draw", reason: "50-move rule" };
+  }
+
+  if (getRepetitionResult(fen)) {
+    return { result: "draw", reason: "threefold repetition" }
   }
 
   return null;
