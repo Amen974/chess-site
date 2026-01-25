@@ -6,7 +6,7 @@ export function exportFEN({
   castlingRights,
   enPassantSquare,
   halfmoveClock,
-  fullmoveNumber = 1,
+  fullmoveNumber,
 }) {
   /* ================= PIECE MAP ================= */
 

@@ -8,7 +8,7 @@ import { undoMove } from "../engine/undoMove";
 import { exportFEN } from "../engine/exportFEN";
 import { importFEN } from "../engine/importFEN";
 import { isLegalMove } from "../engine/validation/isLegalMove";
-import { getStockfishMove } from "../engine/getStockfishMove";
+import { playAIMove } from "../engine/playAIMove";
 
 const Board = () => {
   const [board, setBoard] = useState({ ...startP });
@@ -73,43 +73,34 @@ const Board = () => {
 
   /* ================= AI FIRST MOVE ================= */
 
-  useEffect(() => {
-    if (history.length !== 0) return;
-    if (turn !== aiTurn) return;
+ useEffect(() => {
+  if (history.length !== 0) return;
+  if (turn !== aiTurn) return;
 
-    const playAIFirstMove = async () => {
-      const ai = await getStockfishMove(fen);
-      if (!ai?.move) return;
+  const run = async () => {
+    const result = await playAIMove({
+      board,
+      turn,
+      castlingRights,
+      enPassantSquare,
+      halfmoveClock,
+      fullmoveNumber,
+    });
 
-      const from = ai.move.slice(0, 2);
-      const to = ai.move.slice(2, 4);
+    if (!result) return;
 
-      const result = applyPlayerMove({
-        from,
-        to,
-        state: {
-          board,
-          turn,
-          castlingRights,
-          enPassantSquare,
-          halfmoveClock,
-          fullmoveNumber,
-        },
-      });
+    setBoard(result.board);
+    setHistory([result.move]);
+    setTurn(result.turn);
+    setCastlingRights(result.castlingRights);
+    setEnPassantSquare(result.enPassantSquare);
+    setHalfmoveClock(result.halfmoveClock);
+    setFullmoveNumber(result.fullmoveNumber);
+  };
 
-      if (!result) return;
+  run();
+}, [aiTurn, turn]);
 
-      setBoard(result.board);
-      setHistory([result.move]);
-      setTurn(result.turn);
-      setCastlingRights(result.castlingRights);
-      setEnPassantSquare(result.enPassantSquare);
-      setHalfmoveClock(result.halfmoveClock);
-      setFullmoveNumber(result.fullmoveNumber);
-    };
-
-    playAIFirstMove();
-  }, [aiTurn, turn]);
 
   /* ================= DRAG ================= */
 
@@ -147,33 +138,14 @@ const Board = () => {
     setFullmoveNumber(result.fullmoveNumber);
     setPromotion(result.promotion);
 
-    const newFen = exportFEN({
-      board: result.board,
-      turn: result.turn,
-      castlingRights: result.castlingRights,
-      enPassantSquare: result.enPassantSquare,
-      halfmoveClock: result.halfmoveClock,
-      fullmoveNumber: result.fullmoveNumber,
-    });
-
     if (result.turn === aiTurn) {
-      const ai = await getStockfishMove(newFen);
-      if (!ai?.move) return;
-
-      const from = ai.move.slice(0, 2);
-      const to = ai.move.slice(2, 4);
-
-      const aiResult = applyPlayerMove({
-        from,
-        to,
-        state: {
-          board: result.board,
-          turn: result.turn,
-          castlingRights: result.castlingRights,
-          enPassantSquare: result.enPassantSquare,
-          halfmoveClock: result.halfmoveClock,
-          fullmoveNumber: result.fullmoveNumber,
-        },
+      const aiResult = await playAIMove({
+        board: result.board,
+        turn: result.turn,
+        castlingRights: result.castlingRights,
+        enPassantSquare: result.enPassantSquare,
+        halfmoveClock: result.halfmoveClock,
+        fullmoveNumber: result.fullmoveNumber,
       });
 
       if (!aiResult) return;
@@ -246,33 +218,14 @@ const Board = () => {
     setFullmoveNumber(result.fullmoveNumber);
     setPromotion(result.promotion);
 
-    const newFen = exportFEN({
-      board: result.board,
-      turn: result.turn,
-      castlingRights: result.castlingRights,
-      enPassantSquare: result.enPassantSquare,
-      halfmoveClock: result.halfmoveClock,
-      fullmoveNumber: result.fullmoveNumber,
-    });
-
-    if (result.turn === aiTurn) {
-      const ai = await getStockfishMove(newFen);
-      if (!ai?.move) return;
-
-      const from = ai.move.slice(0, 2);
-      const to = ai.move.slice(2, 4);
-
-      const aiResult = applyPlayerMove({
-        from,
-        to,
-        state: {
-          board: result.board,
-          turn: result.turn,
-          castlingRights: result.castlingRights,
-          enPassantSquare: result.enPassantSquare,
-          halfmoveClock: result.halfmoveClock,
-          fullmoveNumber: result.fullmoveNumber,
-        },
+     if (result.turn === aiTurn) {
+      const aiResult = await playAIMove({
+        board: result.board,
+        turn: result.turn,
+        castlingRights: result.castlingRights,
+        enPassantSquare: result.enPassantSquare,
+        halfmoveClock: result.halfmoveClock,
+        fullmoveNumber: result.fullmoveNumber,
       });
 
       if (!aiResult) return;

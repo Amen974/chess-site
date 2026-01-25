@@ -14,25 +14,34 @@ import { createNextState } from "./createNextState";
 import { handleCastle } from "./helpers/handleCastle";
 
 export function applyPlayerMove({ from, to, state }) {
-  const piece = state.board[from];
-  if (!piece || piece.color !== state.turn) return null;
+  const {
+    board,
+    turn,
+    castlingRights,
+    enPassantSquare,
+    halfmoveClock,
+    fullmoveNumber,
+  } = state;
+
+  const piece = board[from];
+  if (!piece || piece.color !== turn) return null;
 
   const move = createMoveSnapshot(state, from, to);
   const nextState = createNextState(state);
   nextState.promotion = null;
 
-  const enemyColor = state.turn === "white" ? "black" : "white";
-  const capturedPiece = state.board[to];
+  const enemyColor = turn === "white" ? "black" : "white";
+  const capturedPiece = board[to];
 
 
   /* ================= CASTLING ================= */
 
-  if (canCastleKingSide(piece, from, to, state.board, state.castlingRights)) {
+  if (canCastleKingSide(piece, from, to, board, castlingRights)) {
     nextState.board = handleCastle(nextState.board, piece.color, "king");
     move.special = "castle-king";
     move.san = "O-O";
   } else if (
-    canCastleQueenSide(piece, from, to, state.board, state.castlingRights)
+    canCastleQueenSide(piece, from, to, board, castlingRights)
   ) {
     nextState.board = handleCastle(nextState.board, piece.color, "queen");
     move.special = "castle-queen";
@@ -42,14 +51,14 @@ export function applyPlayerMove({ from, to, state }) {
   /* ================= NORMAL / SPECIAL MOVES ================= */
 
   else {
-    if (!isLegalMove(from, to, state.board, state.turn, state.enPassantSquare)) return null;
+    if (!isLegalMove(from, to, board, turn, enPassantSquare)) return null;
 
     /* -------- EN PASSANT -------- */
-    if (piece.type === "pawn" && to === state.enPassantSquare) {
+    if (piece.type === "pawn" && to === enPassantSquare) {
       const dir = piece.color === "white" ? -1 : 1;
       const capturedSquare = to[0] + (Number(to[1]) + dir);
 
-      move.captured = state.board[capturedSquare];
+      move.captured = board[capturedSquare];
       move.special = "en-passant";
 
       nextState.board[capturedSquare] = null;
@@ -68,7 +77,7 @@ export function applyPlayerMove({ from, to, state }) {
   /* ================= STATE UPDATES ================= */
 
   nextState.castlingRights = updateCastlingRights(
-    state.castlingRights,
+    castlingRights,
     from,
     piece
   );
@@ -81,14 +90,14 @@ export function applyPlayerMove({ from, to, state }) {
   );
 
   nextState.halfmoveClock = updateHalfmoveClock(
-    state.halfmoveClock,
+    halfmoveClock,
     piece,
     capturedPiece
   );
 
   nextState.fullmoveNumber = updateFullmoveNumber(
-    state.fullmoveNumber,
-    state.turn
+    fullmoveNumber,
+    turn
   );
 
   /* ================= SAN ================= */
@@ -98,10 +107,10 @@ export function applyPlayerMove({ from, to, state }) {
       from,
       to,
       piece,
-      state.board,
-      state.turn,
+      board,
+      turn,
       nextState.promotion,
-      state.enPassantSquare
+      enPassantSquare
     );
   }
 
@@ -118,7 +127,7 @@ export function applyPlayerMove({ from, to, state }) {
 
   move.fen = fen;
 
-  const gameResult = evaluateGameEnd(state.turn, enemyColor, nextState.board, nextState.halfmoveClock, fen, nextState.enPassantSquare);
+  const gameResult = evaluateGameEnd(turn, enemyColor, nextState.board, nextState.halfmoveClock, fen, nextState.enPassantSquare);
 
   return {
     board: nextState.board,
