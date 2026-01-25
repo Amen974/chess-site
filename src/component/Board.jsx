@@ -54,89 +54,32 @@ const Board = () => {
     fullmoveNumber,
   });
 
-  /* ================= AUTO SCROLL ================= */
-
-  const sanRefMobile = useRef(null);
-  const sanRefDesktop = useRef(null);
-
-  useEffect(() => {
-    const elMobile = sanRefMobile.current;
-    if (elMobile) {
-      elMobile.scrollLeft = elMobile.scrollWidth;
-    }
-
-    const elDesktop = sanRefDesktop.current;
-    if (elDesktop) {
-      elDesktop.scrollTop = elDesktop.scrollHeight;
-    }
-  }, [history.length]);
-
-  /* ================= AI FIRST MOVE ================= */
-
- useEffect(() => {
-  if (history.length !== 0) return;
-  if (turn !== aiTurn) return;
-
-  const run = async () => {
-    const result = await playAIMove({
-      board,
-      turn,
-      castlingRights,
-      enPassantSquare,
-      halfmoveClock,
-      fullmoveNumber,
-    });
-
-    if (!result) return;
-
+  function commitMove(result) {
     setBoard(result.board);
-    setHistory([result.move]);
-    setTurn(result.turn);
-    setCastlingRights(result.castlingRights);
-    setEnPassantSquare(result.enPassantSquare);
-    setHalfmoveClock(result.halfmoveClock);
-    setFullmoveNumber(result.fullmoveNumber);
-  };
-
-  run();
-}, [aiTurn, turn]);
-
-
-  /* ================= DRAG ================= */
-
-  const handleDragStart = (from) => {
-    const piece = board[from];
-    if (!piece) return;
-    if (piece.color !== turn) return;
-    if (promotion) return;
-    setDragFrom(from);
-    setLegalMoves(computeLegalMoves(from));
-  };
-
-  /* ================= DROP ================= */
-
-  const handleOnDrop = async (to) => {
-    if (!dragFrom) return;
-
-    const result = applyPlayerMove({
-      from: dragFrom,
-      to,
-      state,
-    });
-
-    setDragFrom(null);
-    setLegalMoves([]);
-    if (!result) return;
-
-    setBoard(result.board);
-    setHistory((h) => [...h, result.move]);
-    setRedoStack([]);
     setTurn(result.turn);
     setCastlingRights(result.castlingRights);
     setEnPassantSquare(result.enPassantSquare);
     setHalfmoveClock(result.halfmoveClock);
     setFullmoveNumber(result.fullmoveNumber);
     setPromotion(result.promotion);
+    setHistory((h) => [...h, result.move]);
+    setRedoStack([]);
+  }
+
+  async function requestMove({ from, to }) {
+    setSelectedSquare(null);
+    setLegalMoves([]);
+    setDragFrom(null);
+
+    const result = applyPlayerMove({
+      from,
+      to,
+      state,
+    });
+
+    if (!result) return;
+
+    commitMove(result);
 
     if (result.turn === aiTurn) {
       const aiResult = await playAIMove({
@@ -148,15 +91,7 @@ const Board = () => {
         fullmoveNumber: result.fullmoveNumber,
       });
 
-      if (!aiResult) return;
-
-      setBoard(aiResult.board);
-      setHistory((h) => [...h, aiResult.move]);
-      setTurn(aiResult.turn);
-      setCastlingRights(aiResult.castlingRights);
-      setEnPassantSquare(aiResult.enPassantSquare);
-      setHalfmoveClock(aiResult.halfmoveClock);
-      setFullmoveNumber(aiResult.fullmoveNumber);
+      if (aiResult) commitMove(aiResult);
 
       if (aiResult.gameResult) {
         if (aiResult.gameResult.result === "checkmate") {
@@ -176,6 +111,66 @@ const Board = () => {
       }
       return;
     }
+  }
+
+  /* ================= AUTO SCROLL ================= */
+
+  const sanRefMobile = useRef(null);
+  const sanRefDesktop = useRef(null);
+
+  useEffect(() => {
+    const elMobile = sanRefMobile.current;
+    if (elMobile) {
+      elMobile.scrollLeft = elMobile.scrollWidth;
+    }
+
+    const elDesktop = sanRefDesktop.current;
+    if (elDesktop) {
+      elDesktop.scrollTop = elDesktop.scrollHeight;
+    }
+  }, [history.length]);
+
+  /* ================= AI FIRST MOVE ================= */
+
+  useEffect(() => {
+    if (history.length !== 0) return;
+    if (turn !== aiTurn) return;
+
+    const run = async () => {
+      const result = await playAIMove({
+        board,
+        turn,
+        castlingRights,
+        enPassantSquare,
+        halfmoveClock,
+        fullmoveNumber,
+      });
+
+      if (!result) return;
+
+      commitMove(result);
+    };
+
+    run();
+  }, [aiTurn, turn]);
+
+  /* ================= DRAG ================= */
+
+  const handleDragStart = (from) => {
+    const piece = board[from];
+    if (!piece) return;
+    if (piece.color !== turn) return;
+    if (promotion) return;
+    setDragFrom(from);
+    setLegalMoves(computeLegalMoves(from));
+  };
+
+  /* ================= DROP ================= */
+
+  const handleOnDrop = async (to) => {
+    if (!dragFrom) return;
+
+    requestMove({ from: dragFrom, to });
   };
 
   /* ================= Click ================= */
@@ -197,63 +192,7 @@ const Board = () => {
       return;
     }
 
-    const result = applyPlayerMove({
-      from: selectedSquare,
-      to: square,
-      state,
-    });
-
-    setSelectedSquare(null);
-    setLegalMoves([]);
-
-    if (!result) return;
-
-    setBoard(result.board);
-    setHistory((h) => [...h, result.move]);
-    setRedoStack([]);
-    setTurn(result.turn);
-    setCastlingRights(result.castlingRights);
-    setEnPassantSquare(result.enPassantSquare);
-    setHalfmoveClock(result.halfmoveClock);
-    setFullmoveNumber(result.fullmoveNumber);
-    setPromotion(result.promotion);
-
-     if (result.turn === aiTurn) {
-      const aiResult = await playAIMove({
-        board: result.board,
-        turn: result.turn,
-        castlingRights: result.castlingRights,
-        enPassantSquare: result.enPassantSquare,
-        halfmoveClock: result.halfmoveClock,
-        fullmoveNumber: result.fullmoveNumber,
-      });
-
-      if (!aiResult) return;
-
-      setBoard(aiResult.board);
-      setHistory((h) => [...h, aiResult.move]);
-      setTurn(aiResult.turn);
-      setCastlingRights(aiResult.castlingRights);
-      setEnPassantSquare(aiResult.enPassantSquare);
-      setHalfmoveClock(aiResult.halfmoveClock);
-      setFullmoveNumber(aiResult.fullmoveNumber);
-
-      if (aiResult.gameResult) {
-        if (aiResult.gameResult.result === "checkmate") {
-          alert(`${aiResult.gameResult.winner} wins by checkmate`);
-        } else {
-          alert(`Draw by ${aiResult.gameResult.reason}`);
-        }
-      }
-    }
-
-    if (result.gameResult) {
-      if (result.gameResult.result === "checkmate") {
-        alert(`${result.gameResult.winner} wins by checkmate`);
-      } else {
-        alert(`Draw by ${result.gameResult.reason}`);
-      }
-    }
+    requestMove({ from: selectedSquare, to: square });
   };
 
   const computeLegalMoves = (from) => {
