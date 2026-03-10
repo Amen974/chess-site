@@ -1,116 +1,66 @@
-import { useState, useEffect, useRef } from "react";
-import { files, ranks, startP } from "../constant";
+import { useState, useEffect, useRef, useReducer } from "react";
+import { files, ranks } from "../constant";
 import Square from "./Square";
 import PromotionModal from "./PromotionModal";
 import { isLightSquare } from "../engine/validation/isLightSquare";
 import { applyPlayerMove } from "../engine/applyPlayerMove";
-import { undoMove } from "../engine/undoMove";
 import { exportFEN } from "../engine/exportFEN";
-import { importFEN } from "../engine/importFEN";
 import { isLegalMove } from "../engine/validation/isLegalMove";
 import { playAIMove } from "../engine/playAIMove";
+import { gameReducer } from "../engine/game/gameReducer";
+import { initialGameState } from "../engine/game/initialGameState";
 
 const Board = () => {
-  const [board, setBoard] = useState({ ...startP });
-  const [history, setHistory] = useState([]);
-  const [redoStack, setRedoStack] = useState([]);
-  const [turn, setTurn] = useState("white");
   const [dragFrom, setDragFrom] = useState(null);
   const [legalMoves, setLegalMoves] = useState([]);
   const [selectedSquare, setSelectedSquare] = useState(null);
   const [fenInput, setFenInput] = useState("");
-
-  const [castlingRights, setCastlingRights] = useState({
-    white: { kingSide: true, queenSide: true },
-    black: { kingSide: true, queenSide: true },
-  });
-
-  const [enPassantSquare, setEnPassantSquare] = useState(null);
-  const [halfmoveClock, setHalfmoveClock] = useState(0);
-  const [fullmoveNumber, setFullmoveNumber] = useState(1);
-  const [promotion, setPromotion] = useState(null);
-
   const [isFlipped, setIsFlipped] = useState(false);
-  const [aiTurn, setAiTurn] = useState("black");
+
   const renderRanks = isFlipped ? [...ranks].reverse() : ranks;
   const renderFiles = isFlipped ? [...files].reverse() : files;
 
-  const state = {
-    board,
-    turn,
-    castlingRights,
-    enPassantSquare,
-    halfmoveClock,
-    fullmoveNumber,
-    promotion,
-  };
+  const [state, dispatch] = useReducer(gameReducer, initialGameState);
+  const { board, turn, aiTurn, enPassantSquare, history, promotion } = state;
 
-  const fen = exportFEN({
-    board,
-    turn,
-    castlingRights,
-    enPassantSquare,
-    halfmoveClock,
-    fullmoveNumber,
-  });
+  const fen = exportFEN(state);
 
-  function commitMove(result) {
-    setBoard(result.board);
-    setTurn(result.turn);
-    setCastlingRights(result.castlingRights);
-    setEnPassantSquare(result.enPassantSquare);
-    setHalfmoveClock(result.halfmoveClock);
-    setFullmoveNumber(result.fullmoveNumber);
-    setPromotion(result.promotion);
-    setHistory((h) => [...h, result.move]);
-    setRedoStack([]);
+  /* ================= HELPERS ================= */
+
+  function handleGameEnd(gameResult) {
+    if (!gameResult) return;
+    if (gameResult.result === "checkmate") {
+      alert(`${gameResult.winner} wins by checkmate`);
+    } else {
+      alert(`Draw by ${gameResult.reason}`);
+    }
   }
+
+  /* ================= REQUEST MOVE ================= */
 
   async function requestMove({ from, to }) {
     setSelectedSquare(null);
     setLegalMoves([]);
     setDragFrom(null);
 
-    const result = applyPlayerMove({
-      from,
-      to,
-      state,
-    });
-
+    const result = applyPlayerMove({ from, to, state });
     if (!result) return;
 
-    commitMove(result);
-
-    if (result.turn === aiTurn) {
-      const aiResult = await playAIMove({
-        board: result.board,
-        turn: result.turn,
-        castlingRights: result.castlingRights,
-        enPassantSquare: result.enPassantSquare,
-        halfmoveClock: result.halfmoveClock,
-        fullmoveNumber: result.fullmoveNumber,
-      });
-
-      if (aiResult) commitMove(aiResult);
-
-      if (aiResult.gameResult) {
-        if (aiResult.gameResult.result === "checkmate") {
-          alert(`${aiResult.gameResult.winner} wins by checkmate`);
-        } else {
-          alert(`Draw by ${aiResult.gameResult.reason}`);
-        }
-        return;
-      }
-    }
+    dispatch({ type: "COMMIT_MOVE", result });
 
     if (result.gameResult) {
-      if (result.gameResult.result === "checkmate") {
-        alert(`${result.gameResult.winner} wins by checkmate`);
-      } else {
-        alert(`Draw by ${result.gameResult.reason}`);
-      }
+      handleGameEnd(result.gameResult);
       return;
     }
+
+    if (result.turn === aiTurn) {
+      const aiResult = await playAIMove(result);
+      dispatch({ type: "COMMIT_MOVE", result: aiResult ?? result });
+      if (aiResult?.gameResult) handleGameEnd(aiResult.gameResult);
+      return;
+    }
+
+    dispatch({ type: "COMMIT_MOVE", result });
   }
 
   /* ================= AUTO SCROLL ================= */
@@ -120,14 +70,10 @@ const Board = () => {
 
   useEffect(() => {
     const elMobile = sanRefMobile.current;
-    if (elMobile) {
-      elMobile.scrollLeft = elMobile.scrollWidth;
-    }
+    if (elMobile) elMobile.scrollLeft = elMobile.scrollWidth;
 
     const elDesktop = sanRefDesktop.current;
-    if (elDesktop) {
-      elDesktop.scrollTop = elDesktop.scrollHeight;
-    }
+    if (elDesktop) elDesktop.scrollTop = elDesktop.scrollHeight;
   }, [history.length]);
 
   /* ================= AI FIRST MOVE ================= */
@@ -136,52 +82,35 @@ const Board = () => {
     if (history.length !== 0) return;
     if (turn !== aiTurn) return;
 
-    const run = async () => {
-      const result = await playAIMove({
-        board,
-        turn,
-        castlingRights,
-        enPassantSquare,
-        halfmoveClock,
-        fullmoveNumber,
-      });
-
-      if (!result) return;
-
-      commitMove(result);
-    };
-
-    run();
-  }, [aiTurn, turn]);
+    playAIMove(state).then((result) => {
+      if (result) dispatch({ type: "COMMIT_MOVE", result });
+    });
+  }, [aiTurn]);
 
   /* ================= DRAG ================= */
 
   const handleDragStart = (from) => {
     const piece = board[from];
-    if (!piece) return;
-    if (piece.color !== turn) return;
-    if (promotion) return;
+    if (!piece || piece.color !== turn || promotion) return;
     setDragFrom(from);
     setLegalMoves(computeLegalMoves(from));
   };
 
   /* ================= DROP ================= */
 
-  const handleOnDrop = async (to) => {
+  const handleOnDrop = (to) => {
     if (!dragFrom) return;
-
     requestMove({ from: dragFrom, to });
   };
 
-  /* ================= Click ================= */
+  /* ================= CLICK ================= */
 
-  const handleSquareClick = async (square) => {
+  const handleSquareClick = (square) => {
     if (promotion) return;
 
     if (!selectedSquare) {
       const piece = board[square];
-      if (!piece) return;
-      if (piece.color !== turn) return;
+      if (!piece || piece.color !== turn) return;
       setSelectedSquare(square);
       setLegalMoves(computeLegalMoves(square));
       return;
@@ -189,6 +118,7 @@ const Board = () => {
 
     if (square === selectedSquare) {
       setSelectedSquare(null);
+      setLegalMoves([]);
       return;
     }
 
@@ -197,7 +127,6 @@ const Board = () => {
 
   const computeLegalMoves = (from) => {
     const moves = [];
-
     for (const r of ranks) {
       for (const f of files) {
         const to = f + r;
@@ -206,105 +135,48 @@ const Board = () => {
         }
       }
     }
-
     return moves;
   };
 
   /* ================= PROMOTION ================= */
 
   const handlePromotion = (type) => {
-    const { square, color } = promotion;
-
-    setBoard((prev) => ({
-      ...prev,
-      [square]: {
-        type,
-        color,
-        img: `/pieces-basic-svg/${type}-${color[0]}.svg`,
-      },
-    }));
-
-    setPromotion(null);
-    setTurn(color === "white" ? "black" : "white");
+    dispatch({
+      type: "PROMOTE",
+      square: promotion.square,
+      piece: type,
+      color: promotion.color,
+    });
   };
 
   /* ================= UNDO ================= */
 
   const handleUndo = () => {
-    const lastMove = history.at(-1);
-    if (!lastMove) return;
-
-    const prev = undoMove({
-      board,
-      lastMove,
-      castlingRights,
-      enPassantSquare,
-      halfmoveClock,
-      fullmoveNumber,
-    });
-
-    if (!prev) return;
-
-    setBoard(prev.board);
-    setTurn(prev.turn);
-    setCastlingRights(prev.castlingRights);
-    setEnPassantSquare(prev.enPassantSquare);
-    setHalfmoveClock(prev.halfmoveClock);
-    setFullmoveNumber(prev.fullmoveNumber);
-
-    setHistory((h) => h.slice(0, -1));
-    setRedoStack((r) => [...r, lastMove]);
+    dispatch({ type: "UNDO" });
   };
 
   /* ================= REDO ================= */
 
   const handleRedo = () => {
-    const move = redoStack.at(-1);
-    if (!move) return;
-
-    const result = applyPlayerMove({
-      from: move.from,
-      to: move.to,
-      state,
-    });
-
-    if (!result) return;
-
-    setBoard(result.board);
-    setTurn(result.turn);
-    setCastlingRights(result.castlingRights);
-    setEnPassantSquare(result.enPassantSquare);
-    setHalfmoveClock(result.halfmoveClock);
-    setFullmoveNumber(result.fullmoveNumber);
-    setPromotion(result.promotion);
-
-    setHistory((h) => [...h, result.move]);
-    setRedoStack((r) => r.slice(0, -1));
+    dispatch({ type: "REDO" });
   };
 
   /* ================= IMPORT FEN ================= */
 
   const handleImportFEN = () => {
     try {
-      const data = importFEN(fenInput);
-
-      setBoard(data.board);
-      setTurn(data.turn);
-      setCastlingRights(data.castlingRights);
-      setEnPassantSquare(data.enPassantSquare);
-      setHalfmoveClock(data.halfmove);
-      setFullmoveNumber(data.fullmove);
-
-      setHistory([]);
-      setRedoStack([]);
-      setPromotion(null);
+      dispatch({ type: "IMPORT_FEN", fen: fenInput });
+      setFenInput("");
       setDragFrom(null);
-    } catch (e) {
+      setSelectedSquare(null);
+      setLegalMoves([]);
+    } catch {
       alert("Invalid FEN");
     }
   };
 
   /* ================= EXPORT FEN ================= */
+
   const handleCopyFEN = async () => {
     try {
       await navigator.clipboard.writeText(fen);
@@ -312,24 +184,6 @@ const Board = () => {
     } catch {
       alert("Failed to copy FEN");
     }
-  };
-
-  /* ================= SAN ================= */
-  const jumpToPosition = (fen, index) => {
-    const data = importFEN(fen);
-
-    setBoard(data.board);
-    setTurn(data.turn);
-    setCastlingRights(data.castlingRights);
-    setEnPassantSquare(data.enPassantSquare);
-    setHalfmoveClock(data.halfmove);
-    setFullmoveNumber(data.fullmove);
-
-    setHistory((h) => h.slice(0, index + 1));
-    setRedoStack([]);
-    setPromotion(null);
-    setSelectedSquare(null);
-    setLegalMoves([]);
   };
 
   /* ================= RENDER ================= */
@@ -372,7 +226,6 @@ const Board = () => {
             {history.map((move, index) => {
               const moveNumber = Math.floor(index / 2) + 1;
               const isWhite = index % 2 === 0;
-
               return (
                 <div key={index} className="flex items-center">
                   {isWhite && (
@@ -380,13 +233,7 @@ const Board = () => {
                       {moveNumber}.
                     </span>
                   )}
-
-                  <button
-                    className="text-white mr-4"
-                    onClick={() => jumpToPosition(move.fen, index)}
-                  >
-                    {move.san}
-                  </button>
+                  <button className="text-white mr-4">{move.san}</button>
                 </div>
               );
             })}
@@ -400,27 +247,18 @@ const Board = () => {
               (_, i) => {
                 const whiteMove = history[i * 2];
                 const blackMove = history[i * 2 + 1];
-
                 return (
                   <div key={i} className="flex items-center gap-2 text-sm p-2">
                     <span className="text-slate-400 text-right mr-1">
                       {i + 1}.
                     </span>
-
                     {whiteMove && (
-                      <div
-                        className="text-white flex-1 hover:bg-[#101622] rounded-lg p-2 cursor-pointer"
-                        onClick={() => jumpToPosition(whiteMove.fen, i * 2)}
-                      >
+                      <div className="text-white flex-1 hover:bg-[#101622] rounded-lg p-2 cursor-pointer">
                         {whiteMove.san}
                       </div>
                     )}
-
                     {blackMove && (
-                      <div
-                        className="text-white flex-1 hover:bg-[#101622] rounded-lg p-2 cursor-pointer"
-                        onClick={() => jumpToPosition(blackMove.fen, i * 2 + 1)}
-                      >
+                      <div className="text-white flex-1 hover:bg-[#101622] rounded-lg p-2 cursor-pointer">
                         {blackMove.san}
                       </div>
                     )}
@@ -454,8 +292,8 @@ const Board = () => {
 
             <button
               onClick={() => {
-                (setIsFlipped((f) => !f),
-                  setAiTurn((t) => (t === "white" ? "black" : "white")));
+                setIsFlipped((f) => !f);
+                dispatch({ type: "FLIP_BOARD" });
               }}
               className="button-style transition-all active:scale-95 shadow-sm"
             >

@@ -12,7 +12,10 @@ export async function playAIMove(state){
   fullmoveNumber: state.fullmoveNumber,
   });
 
-  const ai = await getStockfishMove(fen);
+  const [ai] = await Promise.all([
+    getStockfishMove(fen),
+    new Promise((resolve) => setTimeout(resolve, 800)),
+  ]);
   if (!ai?.move) return null;
 
   const from = ai.move.slice(0, 2);

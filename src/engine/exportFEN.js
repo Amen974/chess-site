@@ -1,13 +1,8 @@
 import { files, ranks } from "../constant";
 
-export function exportFEN({
-  board,
-  turn,
-  castlingRights,
-  enPassantSquare,
-  halfmoveClock,
-  fullmoveNumber,
-}) {
+export function exportFEN(state) {
+  const { board, turn, castlingRights, enPassantSquare, halfmoveClock, fullmoveNumber } = state;
+
   /* ================= PIECE MAP ================= */
 
   const pieceToChar = {
