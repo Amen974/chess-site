@@ -1,6 +1,6 @@
 export async function getStockfishMove(fen) {
   try {
-    const res = await fetch("/api/chess/v1", {
+    const res = await fetch("https://chess-api.com/v1", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ fen }),
