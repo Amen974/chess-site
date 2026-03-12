@@ -105,24 +105,31 @@ const Board = () => {
   /* ================= CLICK ================= */
 
   const handleSquareClick = (square) => {
-    if (promotion) return;
+  if (promotion) return;
 
-    if (!selectedSquare) {
-      const piece = board[square];
-      if (!piece || piece.color !== turn) return;
-      setSelectedSquare(square);
-      setLegalMoves(computeLegalMoves(square));
-      return;
-    }
+  if (!selectedSquare) {
+    const piece = board[square];
+    if (!piece || piece.color !== turn) return;
+    setSelectedSquare(square);
+    setLegalMoves(computeLegalMoves(square));
+    return;
+  }
 
-    if (square === selectedSquare) {
-      setSelectedSquare(null);
-      setLegalMoves([]);
-      return;
-    }
+  if (square === selectedSquare) {
+    setSelectedSquare(null);
+    setLegalMoves([]);
+    return;
+  }
 
-    requestMove({ from: selectedSquare, to: square });
-  };
+  const piece = board[square];
+  if (piece && piece.color === turn) {
+    setSelectedSquare(square);
+    setLegalMoves(computeLegalMoves(square));
+    return;
+  }
+
+  requestMove({ from: selectedSquare, to: square });
+};
 
   const computeLegalMoves = (from) => {
     const moves = [];
