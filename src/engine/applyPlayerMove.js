@@ -53,7 +53,7 @@ export function applyPlayerMove({ from, to, state }) {
   /* ================= NORMAL / SPECIAL MOVES ================= */
 
   else {
-    if (!isLegalMove(from, to, board, turn, enPassantSquare)) return null;
+    if (!isLegalMove(from, to, board, turn, enPassantSquare, castlingRights)) return null;
 
     /* -------- EN PASSANT -------- */
     if (piece.type === "pawn" && to === enPassantSquare) {
@@ -112,7 +112,8 @@ export function applyPlayerMove({ from, to, state }) {
       board,
       turn,
       nextState.promotion,
-      enPassantSquare
+      enPassantSquare,
+      castlingRights
     );
   }
 
@@ -129,7 +130,7 @@ export function applyPlayerMove({ from, to, state }) {
 
   move.fen = fen;
 
-  const gameResult = evaluateGameEnd(turn, enemyColor, nextState.board, nextState.halfmoveClock, fen, nextState.enPassantSquare, resign, aiTurn);
+  const gameResult = evaluateGameEnd(turn, enemyColor, nextState.board, nextState.halfmoveClock, fen, nextState.enPassantSquare, resign, aiTurn, nextState.castlingRights);
 
   return {
     board: nextState.board,

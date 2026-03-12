@@ -9,7 +9,8 @@ export function generateSAN(
   board,
   turn,
   promotion,
-  enPassantSquare
+  enPassantSquare,
+  castlingRights
 ) {
   const enemyColor = turn === "white" ? "black" : "white";
 
@@ -40,7 +41,7 @@ export function generateSAN(
       if (other.type !== piece.type) continue;
       if (other.color !== piece.color) continue;
 
-      if (isLegalMove(square, to, board, turn, enPassantSquare)) {
+      if (isLegalMove(square, to, board, turn, enPassantSquare, castlingRights)) {
         if (square[0] === from[0]) sameFile = true;
         if (square[1] === from[1]) sameRank = true;
       }
@@ -66,8 +67,8 @@ export function generateSAN(
   newBoard[to] = piece;
   newBoard[from] = null;
 
-  if (isCheckmate(enemyColor, newBoard, enPassantSquare)) checkSuffix = "#";
-  else if (isKingInCheck(enemyColor, newBoard)) checkSuffix = "+";
+  if (isCheckmate(enemyColor, newBoard, enPassantSquare, castlingRights)) checkSuffix = "#";
+  else if (isKingInCheck(enemyColor, newBoard, castlingRights)) checkSuffix = "+";
 
   return (
     pieceLetter +

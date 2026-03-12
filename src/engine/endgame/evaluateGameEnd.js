@@ -4,13 +4,13 @@ import { isInsufficientMaterial } from "./isInsufficientMaterial";
 import { isStalemate } from "./isStalemate";
 
 
-export function evaluateGameEnd(turn, enemy, board, halfmoveClock, fen, enPassantSquare, resign, aiTurn) {
+export function evaluateGameEnd(turn, enemy, board, halfmoveClock, fen, enPassantSquare, resign, aiTurn, castlingRights) {
 
-  if (isCheckmate(enemy, board, enPassantSquare)) {
+  if (isCheckmate(enemy, board, enPassantSquare, castlingRights)) {
     return { result: "checkmate", winner: turn, reason: "checkmate" };
   }
 
-  if (isStalemate(enemy, board)) {
+  if (isStalemate(enemy, board, enPassantSquare, castlingRights)) {
     return { result: "draw", reason: "stalemate" };
   }
 

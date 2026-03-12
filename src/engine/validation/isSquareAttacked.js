@@ -6,7 +6,7 @@ import { queenMove } from "../moveGeneration/queen";
 import { rookMove } from "../moveGeneration/rook";
 
 
-export function isSquareAttacked(to, enemyColor, board) {
+export function isSquareAttacked(to, enemyColor, board, castlingRights) {
   for (const from in board) {
     const piece = board[from];
     if (!piece) continue;
@@ -30,7 +30,7 @@ export function isSquareAttacked(to, enemyColor, board) {
         if (queenMove(from, to, enemyColor, board)) return true;
         break;
       case "king":
-        if (kingMove(from, to, enemyColor, board)) return true;
+        if (kingMove(from, to, enemyColor, board, castlingRights)) return true;
         break;
     }
   }

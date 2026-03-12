@@ -7,7 +7,7 @@ import { rookMove } from "../moveGeneration/rook";
 import { isKingInCheck } from "./isKingInCheck";
 
 
-export function isLegalMove(from, to, board, turn, enPassantSquare) {
+export function isLegalMove(from, to, board, turn, enPassantSquare, castlingRights) {
   const piece = board[from];
   if (!piece) return false;
 
@@ -30,7 +30,7 @@ export function isLegalMove(from, to, board, turn, enPassantSquare) {
       valid = queenMove(from, to, turn, board);
       break;
     case "king":
-      valid = kingMove(from, to, turn, board);
+      valid = kingMove(from, to, turn, board, castlingRights);
       break;
     default:
       return false;
@@ -39,10 +39,12 @@ export function isLegalMove(from, to, board, turn, enPassantSquare) {
   if (!valid) return false;
 
   const newBoard = { ...board };
-  newBoard[to] = piece;
-  newBoard[from] = null;
-
-  if (isKingInCheck(turn, newBoard)) return false;
+  const isCastle = piece.type === "king" && Math.abs(to.charCodeAt(0) - from.charCodeAt(0)) === 2;
+  if (!isCastle) {
+    newBoard[to] = piece;
+    newBoard[from] = null;
+    if (isKingInCheck(turn, newBoard)) return false;
+  }
 
   return true;
 }

@@ -1,8 +1,8 @@
 import { isKingInCheck } from "../validation/isKingInCheck";
 import { isLegalMove } from "../validation/isLegalMove";
 
-export function isCheckmate(turn, board, enPassantSquare) {
-  if (!isKingInCheck(turn, board)) return false;
+export function isCheckmate(turn, board, enPassantSquare, castlingRights) {
+  if (!isKingInCheck(turn, board, castlingRights)) return false;
 
   // Find the king's position
   let kingSquare = null;
@@ -40,7 +40,7 @@ export function isCheckmate(turn, board, enPassantSquare) {
       continue;
     }
     
-    if (isLegalMove(kingSquare, toSquare, board, turn, enPassantSquare)) {
+    if (isLegalMove(kingSquare, toSquare, board, turn, enPassantSquare, castlingRights)) {
       return false; 
     }
   }
@@ -53,12 +53,12 @@ export function isCheckmate(turn, board, enPassantSquare) {
     for (const to in board) {
       if (from === to) continue;
 
-      if (isLegalMove(from, to, board, turn, enPassantSquare)) {
+      if (isLegalMove(from, to, board, turn, enPassantSquare, castlingRights)) {
         const tempBoard = { ...board };
         tempBoard[to] = piece;
         tempBoard[from] = null;
         
-        if (!isKingInCheck(turn, tempBoard)) {
+        if (!isKingInCheck(turn, tempBoard, castlingRights)) {
           return false;
         }
       }

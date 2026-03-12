@@ -136,7 +136,7 @@ const Board = () => {
     for (const r of ranks) {
       for (const f of files) {
         const to = f + r;
-        if (isLegalMove(from, to, board, turn, enPassantSquare)) {
+        if (isLegalMove(from, to, board, turn, enPassantSquare, state.castlingRights)) {
           moves.push(to);
         }
       }

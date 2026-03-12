@@ -3,8 +3,8 @@ import { isKingInCheck } from "../validation/isKingInCheck";
 import { isLegalMove } from "../validation/isLegalMove";
 
 
-export function isStalemate(color, board) {
-  if (isKingInCheck(color, board)) return false;
+export function isStalemate(color, board, enPassantSquare, castlingRights) {
+  if (isKingInCheck(color, board, castlingRights)) return false;
 
   for (const from in board) {
     const piece = board[from];
@@ -15,7 +15,7 @@ export function isStalemate(color, board) {
         const to = `${file}${rank}`;
         if (from === to) continue;
 
-        if (isLegalMove(from, to, board, color)) {
+        if (isLegalMove(from, to, board, color, enPassantSquare, castlingRights)) {
           return false;
         }
       }
