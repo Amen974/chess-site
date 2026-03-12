@@ -105,31 +105,31 @@ const Board = () => {
   /* ================= CLICK ================= */
 
   const handleSquareClick = (square) => {
-  if (promotion) return;
+    if (promotion) return;
 
-  if (!selectedSquare) {
+    if (!selectedSquare) {
+      const piece = board[square];
+      if (!piece || piece.color !== turn) return;
+      setSelectedSquare(square);
+      setLegalMoves(computeLegalMoves(square));
+      return;
+    }
+
+    if (square === selectedSquare) {
+      setSelectedSquare(null);
+      setLegalMoves([]);
+      return;
+    }
+
     const piece = board[square];
-    if (!piece || piece.color !== turn) return;
-    setSelectedSquare(square);
-    setLegalMoves(computeLegalMoves(square));
-    return;
-  }
+    if (piece && piece.color === turn) {
+      setSelectedSquare(square);
+      setLegalMoves(computeLegalMoves(square));
+      return;
+    }
 
-  if (square === selectedSquare) {
-    setSelectedSquare(null);
-    setLegalMoves([]);
-    return;
-  }
-
-  const piece = board[square];
-  if (piece && piece.color === turn) {
-    setSelectedSquare(square);
-    setLegalMoves(computeLegalMoves(square));
-    return;
-  }
-
-  requestMove({ from: selectedSquare, to: square });
-};
+    requestMove({ from: selectedSquare, to: square });
+  };
 
   const computeLegalMoves = (from) => {
     const moves = [];
@@ -142,29 +142,6 @@ const Board = () => {
       }
     }
     return moves;
-  };
-
-  /* ================= PROMOTION ================= */
-
-  const handlePromotion = (type) => {
-    dispatch({
-      type: "PROMOTE",
-      square: promotion.square,
-      piece: type,
-      color: promotion.color,
-    });
-  };
-
-  /* ================= UNDO ================= */
-
-  const handleUndo = () => {
-    dispatch({ type: "UNDO" });
-  };
-
-  /* ================= REDO ================= */
-
-  const handleRedo = () => {
-    dispatch({ type: "REDO" });
   };
 
   /* ================= IMPORT FEN ================= */
@@ -196,7 +173,15 @@ const Board = () => {
 
   return (
     <div className="flex justify-center items-center h-screen w-screen">
-      { showResult && (<GameResult gameResult={state.gameResult}/>)}
+      {showResult && (
+        <GameResult
+          gameResult={state.gameResult}
+          handelReset={() => {
+            (dispatch({ type: "RESET" }), setShowResult(false));
+          }}
+          handelClose={() => setShowResult(false)}
+        />
+      )}
       <div className="flex flex-wrap gap-2 justify-center md:items-center">
         <div className="grid grid-cols-8 border-4 border-grey-color rounded-2xl overflow-hidden">
           {renderRanks.map((rank) =>
@@ -222,7 +207,17 @@ const Board = () => {
         </div>
 
         {promotion && (
-          <PromotionModal color={promotion.color} onSelect={handlePromotion} />
+          <PromotionModal
+            color={promotion.color}
+            onSelect={(type) =>
+              dispatch({
+                type: "PROMOTE",
+                square: promotion.square,
+                piece: type,
+                color: promotion.color,
+              })
+            }
+          />
         )}
 
         <div className="flex flex-col gap-2">
@@ -277,7 +272,8 @@ const Board = () => {
 
           <div className="w-full flex justify-center gap-1">
             <button
-              onClick={handleUndo}
+              onClick={() => dispatch({ type: "UNDO" })}
+              disabled={!!state.gameResult}
               className="button-style transition-all active:scale-95 shadow-sm"
             >
               <img src="/SVG/undo.svg" alt="Undo" className="w-5 h-5" />
@@ -285,7 +281,8 @@ const Board = () => {
             </button>
 
             <button
-              onClick={handleRedo}
+              onClick={() => dispatch({ type: "REDO" })}
+              disabled={!!state.gameResult}
               className="button-style transition-all active:scale-95 shadow-sm"
             >
               <img src="/SVG/redo.svg" alt="Redo" className="w-5 h-5" />
@@ -293,7 +290,7 @@ const Board = () => {
             </button>
 
             <button
-              onClick={() => dispatch({type: 'resign'})}
+              onClick={() => dispatch({ type: "resign" })}
               className="button-style transition-all active:scale-95 shadow-sm"
             >
               <img src="/SVG/resign.svg" alt="Resign" className="w-5 h-5" />
