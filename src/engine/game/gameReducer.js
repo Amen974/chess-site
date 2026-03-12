@@ -3,10 +3,8 @@ import { importFEN } from "../importFEN";
 import { undoMove } from "../undoMove";
 import { initialGameState } from "./initialGameState";
 
-
 export function gameReducer(state, action) {
   switch (action.type) {
-
     case "COMMIT_MOVE": {
       const { result } = action;
       return {
@@ -114,6 +112,18 @@ export function gameReducer(state, action) {
         aiTurn: state.aiTurn === "white" ? "black" : "white",
       };
     }
+
+    case 'resign': {
+      const winner = state.aiTurn;
+      return {
+        ...state,
+        resign: true,
+        gameResult: { result: "loss", winner, reason: "resignation" }
+      };
+    }
+
+    case "RESET":
+      return initialGameState;
 
     default:
       return state;

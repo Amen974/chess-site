@@ -18,4 +18,5 @@ export const initialGameState = {
   gameResult: null,
 
   redoStack: [], 
+  resign: false,
 };

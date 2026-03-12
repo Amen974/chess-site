@@ -9,6 +9,7 @@ import { isLegalMove } from "../engine/validation/isLegalMove";
 import { playAIMove } from "../engine/playAIMove";
 import { gameReducer } from "../engine/game/gameReducer";
 import { initialGameState } from "../engine/game/initialGameState";
+import GameResult from "./GameResult";
 
 const Board = () => {
   const [dragFrom, setDragFrom] = useState(null);
@@ -16,6 +17,7 @@ const Board = () => {
   const [selectedSquare, setSelectedSquare] = useState(null);
   const [fenInput, setFenInput] = useState("");
   const [isFlipped, setIsFlipped] = useState(false);
+  const [showResult, setShowResult] = useState(false);
 
   const renderRanks = isFlipped ? [...ranks].reverse() : ranks;
   const renderFiles = isFlipped ? [...files].reverse() : files;
@@ -25,17 +27,6 @@ const Board = () => {
 
   const fen = exportFEN(state);
 
-  /* ================= HELPERS ================= */
-
-  function handleGameEnd(gameResult) {
-    if (!gameResult) return;
-    if (gameResult.result === "checkmate") {
-      alert(`${gameResult.winner} wins by checkmate`);
-    } else {
-      alert(`Draw by ${gameResult.reason}`);
-    }
-  }
-
   /* ================= REQUEST MOVE ================= */
 
   async function requestMove({ from, to }) {
@@ -43,25 +34,33 @@ const Board = () => {
     setLegalMoves([]);
     setDragFrom(null);
 
+    if (state.gameResult) return;
+
     const result = applyPlayerMove({ from, to, state });
     if (!result) return;
 
     dispatch({ type: "COMMIT_MOVE", result });
 
-    if (result.gameResult) {
-      handleGameEnd(result.gameResult);
-      return;
-    }
+    if (result.gameResult) return;
 
     if (result.turn === aiTurn) {
       const aiResult = await playAIMove(result);
       dispatch({ type: "COMMIT_MOVE", result: aiResult ?? result });
-      if (aiResult?.gameResult) handleGameEnd(aiResult.gameResult);
       return;
     }
 
     dispatch({ type: "COMMIT_MOVE", result });
   }
+
+  /* ================= GAME RESULT TIMEOUT ================= */
+
+  useEffect(() => {
+    if (!state.gameResult) {
+      return;
+    }
+    const timer = setTimeout(() => setShowResult(true), 500);
+    return () => clearTimeout(timer);
+  }, [state.gameResult]);
 
   /* ================= AUTO SCROLL ================= */
 
@@ -190,6 +189,7 @@ const Board = () => {
 
   return (
     <div className="flex justify-center items-center h-screen w-screen">
+      { showResult && (<GameResult gameResult={state.gameResult}/>)}
       <div className="flex flex-wrap gap-2 justify-center md:items-center">
         <div className="grid grid-cols-8 border-4 border-grey-color rounded-2xl overflow-hidden">
           {renderRanks.map((rank) =>
@@ -285,7 +285,10 @@ const Board = () => {
               <span className="text-xs font-bold uppercase">REDO</span>
             </button>
 
-            <button className="button-style transition-all active:scale-95 shadow-sm">
+            <button
+              onClick={() => dispatch({type: 'resign'})}
+              className="button-style transition-all active:scale-95 shadow-sm"
+            >
               <img src="/SVG/resign.svg" alt="Resign" className="w-5 h-5" />
               <span className="text-xs font-bold uppercase">RESIGN</span>
             </button>

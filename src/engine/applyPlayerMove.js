@@ -21,6 +21,8 @@ export function applyPlayerMove({ from, to, state }) {
     enPassantSquare,
     halfmoveClock,
     fullmoveNumber,
+    resign,
+    aiTurn,
   } = state;
 
   const piece = board[from];
@@ -127,7 +129,7 @@ export function applyPlayerMove({ from, to, state }) {
 
   move.fen = fen;
 
-  const gameResult = evaluateGameEnd(turn, enemyColor, nextState.board, nextState.halfmoveClock, fen, nextState.enPassantSquare);
+  const gameResult = evaluateGameEnd(turn, enemyColor, nextState.board, nextState.halfmoveClock, fen, nextState.enPassantSquare, resign, aiTurn);
 
   return {
     board: nextState.board,
@@ -139,5 +141,6 @@ export function applyPlayerMove({ from, to, state }) {
     promotion: nextState.promotion,
     move,
     gameResult,
+    resign,
   };
 }

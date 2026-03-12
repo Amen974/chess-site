@@ -4,10 +4,10 @@ import { isInsufficientMaterial } from "./isInsufficientMaterial";
 import { isStalemate } from "./isStalemate";
 
 
-export function evaluateGameEnd(turn, enemy, board, halfmoveClock, fen, enPassantSquare) {
+export function evaluateGameEnd(turn, enemy, board, halfmoveClock, fen, enPassantSquare, resign, aiTurn) {
 
   if (isCheckmate(enemy, board, enPassantSquare)) {
-    return { result: "checkmate", winner: turn };
+    return { result: "checkmate", winner: turn, reason: "checkmate" };
   }
 
   if (isStalemate(enemy, board)) {
@@ -24,6 +24,10 @@ export function evaluateGameEnd(turn, enemy, board, halfmoveClock, fen, enPassan
 
   if (getRepetitionResult(fen)) {
     return { result: "draw", reason: "threefold repetition" }
+  }
+
+  if (resign) {
+    return { result: "win", winner: aiTurn, reason: "Resign" };
   }
 
   return null;
