@@ -26,25 +26,22 @@ export function undoMove({
   /* ===== CASTLING ===== */
   if (lastMove.special === "castle-king") {
     if (lastMove.piece.color === "white") {
-      newBoard.e1 = newBoard.g1;
+
       newBoard.h1 = newBoard.f1;
-      newBoard.g1 = newBoard.f1 = null;
+      newBoard.f1 = null;
     } else {
-      newBoard.e8 = newBoard.g8;
       newBoard.h8 = newBoard.f8;
-      newBoard.g8 = newBoard.f8 = null;
+      newBoard.f8 = null;
     }
   }
 
   if (lastMove.special === "castle-queen") {
     if (lastMove.piece.color === "white") {
-      newBoard.e1 = newBoard.c1;
       newBoard.a1 = newBoard.d1;
-      newBoard.c1 = newBoard.d1 = null;
+      newBoard.d1 = null;
     } else {
-      newBoard.e8 = newBoard.c8;
       newBoard.a8 = newBoard.d8;
-      newBoard.c8 = newBoard.d8 = null;
+      newBoard.d8 = null;
     }
   }
 
@@ -64,6 +61,6 @@ export function undoMove({
     castlingRights: lastMove.prevCastlingRights,
     enPassantSquare: lastMove.prevEnPassantSquare,
     halfmoveClock: lastMove.prevHalfmoveClock,
-    fullmoveNumber: lastMove.prevFullMoveNumber
+    fullmoveNumber: lastMove.prevFullmoveNumber
   };
 }

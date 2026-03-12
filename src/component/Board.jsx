@@ -322,6 +322,7 @@ const Board = () => {
                 onChange={(e) => setFenInput(e.target.value)}
                 placeholder="Import FEN..."
                 onKeyDown={(e) => e.key === "Enter" && handleImportFEN()}
+                disabled={!!state.gameResult}
               />
             </div>
             <button
