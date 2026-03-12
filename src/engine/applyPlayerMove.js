@@ -111,7 +111,7 @@ export function applyPlayerMove({ from, to, state }) {
       piece,
       board,
       turn,
-      nextState.promotion,
+      null,
       enPassantSquare,
       castlingRights
     );

@@ -1,4 +1,5 @@
 import { applyPlayerMove } from "../applyPlayerMove";
+import { generateSAN } from "../generateSAN";
 import { importFEN } from "../importFEN";
 import { undoMove } from "../undoMove";
 import { initialGameState } from "./initialGameState";
@@ -23,18 +24,38 @@ export function gameReducer(state, action) {
     }
 
     case "PROMOTE": {
+      const promotedPiece = {
+        type: action.piece,
+        color: action.color,
+        img: `/pieces-basic-svg/${action.piece}-${action.color[0]}.svg`,
+      };
+
+      const newBoard = {
+        ...state.board,
+        [action.square]: promotedPiece,
+      };
+
+      const lastMove = state.history[state.history.length - 1];
+      const updatedMove = {
+        ...lastMove,
+        san: generateSAN(
+          lastMove.from,
+          lastMove.to,
+          lastMove.piece,
+          newBoard,
+          action.color,
+          promotedPiece,
+          lastMove.prevEnPassantSquare,
+          lastMove.prevCastlingRights,
+        ),
+      };
+
       return {
         ...state,
-        board: {
-          ...state.board,
-          [action.square]: {
-            type: action.piece,
-            color: action.color,
-            img: `/pieces-basic-svg/${action.piece}-${action.color[0]}.svg`,
-          },
-        },
+        board: newBoard,
         promotion: null,
         turn: action.color === "white" ? "black" : "white",
+        history: [...state.history.slice(0, -1), updatedMove],
       };
     }
 
@@ -113,12 +134,12 @@ export function gameReducer(state, action) {
       };
     }
 
-    case 'resign': {
+    case "resign": {
       const winner = state.aiTurn;
       return {
         ...state,
         resign: true,
-        gameResult: { result: "loss", winner, reason: "resignation" }
+        gameResult: { result: "loss", winner, reason: "resignation" },
       };
     }
 
