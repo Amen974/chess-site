@@ -19,6 +19,7 @@ const Board = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [viewingIndex, setViewingIndex] = useState(-1);
+  const [lastMove, setLastMove] = useState({});
 
   const renderRanks = isFlipped ? [...ranks].reverse() : ranks;
   const renderFiles = isFlipped ? [...files].reverse() : files;
@@ -42,6 +43,7 @@ const Board = () => {
     setSelectedSquare(null);
     setLegalMoves([]);
     setDragFrom(null);
+    setLastMove({});
 
     if (state.gameResult) return;
 
@@ -49,12 +51,14 @@ const Board = () => {
     if (!result) return;
 
     dispatch({ type: "COMMIT_MOVE", result });
+    setLastMove({from, to});
 
     if (result.gameResult) return;
 
     if (result.turn === aiTurn) {
       const aiResult = await playAIMove(result);
       dispatch({ type: "COMMIT_MOVE", result: aiResult ?? result });
+      if (aiResult) setLastMove({ from: aiResult.move.from, to: aiResult.move.to });
       return;
     }
 
@@ -227,6 +231,7 @@ const Board = () => {
                   onDrop={handleOnDrop}
                   isSelected={squareId === selectedSquare}
                   isLegalMove={legalMoves.includes(squareId)}
+                  isLastMove={squareId === lastMove.from || squareId === lastMove.to}
                 />
               );
             }),

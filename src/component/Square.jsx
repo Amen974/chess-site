@@ -1,12 +1,13 @@
 
-const Square = ({ piece, color, id, onDrop, onDragStart, onClick, isSelected, isLegalMove, }) => {
+const Square = ({ piece, color, id, onDrop, onDragStart, onClick, isSelected, isLegalMove, isLastMove, }) => {
   const isTouch = "ontouchstart" in window;
   return (
     <div
       className={`relative flex justify-center items-center
     w-10 h-10 sm:w-14 sm:h-14 lg:w-18 lg:h-18 2xl:w-20 2xl:h-20
     ${color}
-    ${isSelected ? "" : ""}
+    ${isSelected && (color === "blackSquare" ? "brightness-125" : "brightness-90")}
+    ${isLastMove && (color === "blackSquare" ? "brightness-125" : "brightness-90")}
   `}
       id={id}
       onClick={() => {onClick(id)}}
