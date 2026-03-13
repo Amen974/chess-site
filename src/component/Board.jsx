@@ -262,7 +262,7 @@ const Board = () => {
                       {moveNumber}.
                     </span>
                   )}
-                  <button className="text-white mr-4">{move.san}</button>
+                  <button onClick={() => jumpToPosition(index)} className="text-white mr-4">{move.san}</button>
                 </div>
               );
             })}
