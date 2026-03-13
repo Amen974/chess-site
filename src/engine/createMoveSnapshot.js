@@ -4,6 +4,7 @@ export function createMoveSnapshot(state, from, to) {
     to,
     piece: state.board[from],
     captured: state.board[to] ?? null,
+    board: state.board,
 
     prevCastlingRights: structuredClone(state.castlingRights),
     prevEnPassantSquare: state.enPassantSquare,

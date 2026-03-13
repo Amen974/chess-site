@@ -18,6 +18,7 @@ const Board = () => {
   const [fenInput, setFenInput] = useState("");
   const [isFlipped, setIsFlipped] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const [viewingIndex, setViewingIndex] = useState(-1);
 
   const renderRanks = isFlipped ? [...ranks].reverse() : ranks;
   const renderFiles = isFlipped ? [...files].reverse() : files;
@@ -27,9 +28,17 @@ const Board = () => {
 
   const fen = exportFEN(state);
 
+  const displayBoard =
+    viewingIndex >= 0 && viewingIndex < history.length
+      ? history[viewingIndex].board
+      : board;
+
+  const isBrowsing = viewingIndex >= 0 && viewingIndex < history.length - 1;
+
   /* ================= REQUEST MOVE ================= */
 
   async function requestMove({ from, to }) {
+    setViewingIndex(-1)
     setSelectedSquare(null);
     setLegalMoves([]);
     setDragFrom(null);
@@ -89,6 +98,7 @@ const Board = () => {
   /* ================= DRAG ================= */
 
   const handleDragStart = (from) => {
+    if (isBrowsing) return;
     const piece = board[from];
     if (!piece || piece.color !== turn || promotion) return;
     setDragFrom(from);
@@ -98,6 +108,7 @@ const Board = () => {
   /* ================= DROP ================= */
 
   const handleOnDrop = (to) => {
+    if (isBrowsing) return;
     if (!dragFrom) return;
     requestMove({ from: dragFrom, to });
   };
@@ -105,6 +116,7 @@ const Board = () => {
   /* ================= CLICK ================= */
 
   const handleSquareClick = (square) => {
+    if (isBrowsing) return;
     if (promotion) return;
 
     if (!selectedSquare) {
@@ -136,12 +148,27 @@ const Board = () => {
     for (const r of ranks) {
       for (const f of files) {
         const to = f + r;
-        if (isLegalMove(from, to, board, turn, enPassantSquare, state.castlingRights)) {
+        if (
+          isLegalMove(
+            from,
+            to,
+            board,
+            turn,
+            enPassantSquare,
+            state.castlingRights,
+          )
+        ) {
           moves.push(to);
         }
       }
     }
     return moves;
+  };
+
+  /* ================= jumpToPosition ================= */
+
+  const jumpToPosition = (i) => {
+    setViewingIndex(i);
   };
 
   /* ================= IMPORT FEN ================= */
@@ -194,7 +221,7 @@ const Board = () => {
                   key={squareId}
                   id={squareId}
                   color={light ? "blackSquare" : "whiteSquare"}
-                  piece={board[squareId]}
+                  piece={displayBoard[squareId]}
                   onClick={handleSquareClick}
                   onDragStart={handleDragStart}
                   onDrop={handleOnDrop}
@@ -255,12 +282,18 @@ const Board = () => {
                       {i + 1}.
                     </span>
                     {whiteMove && (
-                      <div className="text-white flex-1 hover:bg-[#101622] rounded-lg p-2 cursor-pointer">
+                      <div
+                        onClick={()=>jumpToPosition(i * 2)}
+                        className="text-white flex-1 hover:bg-[#101622] hover:text-blue-700 rounded-lg p-2 cursor-pointer"
+                      >
                         {whiteMove.san}
                       </div>
                     )}
                     {blackMove && (
-                      <div className="text-white flex-1 hover:bg-[#101622] rounded-lg p-2 cursor-pointer">
+                      <div
+                        onClick={()=>jumpToPosition(i * 2 + 1)}
+                        className="text-white flex-1 hover:bg-[#101622] hover:text-blue-700 rounded-lg p-2 cursor-pointer"
+                      >
                         {blackMove.san}
                       </div>
                     )}

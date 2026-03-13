@@ -18,7 +18,7 @@ export function gameReducer(state, action) {
         fullmoveNumber: result.fullmoveNumber,
         promotion: result.promotion,
         gameResult: result.gameResult,
-        history: [...state.history, result.move],
+        history: [...state.history, { ...result.move, board: result.board }],
         redoStack: [],
       };
     }

@@ -35,25 +35,21 @@ export function applyPlayerMove({ from, to, state }) {
   const enemyColor = turn === "white" ? "black" : "white";
   const capturedPiece = board[to];
 
-
   /* ================= CASTLING ================= */
 
   if (canCastleKingSide(piece, from, to, board, castlingRights)) {
     nextState.board = handleCastle(nextState.board, piece.color, "king");
     move.special = "castle-king";
     move.san = "O-O";
-  } else if (
-    canCastleQueenSide(piece, from, to, board, castlingRights)
-  ) {
+  } else if (canCastleQueenSide(piece, from, to, board, castlingRights)) {
     nextState.board = handleCastle(nextState.board, piece.color, "queen");
     move.special = "castle-queen";
     move.san = "O-O-O";
-  }
+  } else {
 
   /* ================= NORMAL / SPECIAL MOVES ================= */
-
-  else {
-    if (!isLegalMove(from, to, board, turn, enPassantSquare, castlingRights)) return null;
+    if (!isLegalMove(from, to, board, turn, enPassantSquare, castlingRights))
+      return null;
 
     /* -------- EN PASSANT -------- */
     if (piece.type === "pawn" && to === enPassantSquare) {
@@ -78,29 +74,22 @@ export function applyPlayerMove({ from, to, state }) {
 
   /* ================= STATE UPDATES ================= */
 
-  nextState.castlingRights = updateCastlingRights(
-    castlingRights,
-    from,
-    piece
-  );
+  nextState.castlingRights = updateCastlingRights(castlingRights, from, piece);
 
   nextState.enPassantSquare = updateEnPassantSquare(
     from,
     to,
     piece,
-    nextState.board
+    nextState.board,
   );
 
   nextState.halfmoveClock = updateHalfmoveClock(
     halfmoveClock,
     piece,
-    capturedPiece
+    capturedPiece,
   );
 
-  nextState.fullmoveNumber = updateFullmoveNumber(
-    fullmoveNumber,
-    turn
-  );
+  nextState.fullmoveNumber = updateFullmoveNumber(fullmoveNumber, turn);
 
   /* ================= SAN ================= */
 
@@ -113,7 +102,7 @@ export function applyPlayerMove({ from, to, state }) {
       turn,
       null,
       enPassantSquare,
-      castlingRights
+      castlingRights,
     );
   }
 
@@ -130,7 +119,17 @@ export function applyPlayerMove({ from, to, state }) {
 
   move.fen = fen;
 
-  const gameResult = evaluateGameEnd(turn, enemyColor, nextState.board, nextState.halfmoveClock, fen, nextState.enPassantSquare, resign, aiTurn, nextState.castlingRights);
+  const gameResult = evaluateGameEnd(
+    turn,
+    enemyColor,
+    nextState.board,
+    nextState.halfmoveClock,
+    fen,
+    nextState.enPassantSquare,
+    resign,
+    aiTurn,
+    nextState.castlingRights,
+  );
 
   return {
     board: nextState.board,
