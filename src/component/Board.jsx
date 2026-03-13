@@ -10,6 +10,7 @@ import { playAIMove } from "../engine/playAIMove";
 import { gameReducer } from "../engine/game/gameReducer";
 import { initialGameState } from "../engine/game/initialGameState";
 import GameResult from "./GameResult";
+import gsap from "gsap";
 
 const Board = () => {
   const [dragFrom, setDragFrom] = useState(null);
@@ -39,7 +40,7 @@ const Board = () => {
   /* ================= REQUEST MOVE ================= */
 
   async function requestMove({ from, to }) {
-    setViewingIndex(-1)
+    setViewingIndex(-1);
     setSelectedSquare(null);
     setLegalMoves([]);
     setDragFrom(null);
@@ -51,14 +52,17 @@ const Board = () => {
     if (!result) return;
 
     dispatch({ type: "COMMIT_MOVE", result });
-    setLastMove({from, to});
+    setLastMove({ from, to });
 
     if (result.gameResult) return;
 
     if (result.turn === aiTurn) {
+      startSpin();
       const aiResult = await playAIMove(result);
+      stopSpin();
       dispatch({ type: "COMMIT_MOVE", result: aiResult ?? result });
-      if (aiResult) setLastMove({ from: aiResult.move.from, to: aiResult.move.to });
+      if (aiResult)
+        setLastMove({ from: aiResult.move.from, to: aiResult.move.to });
       return;
     }
 
@@ -200,6 +204,28 @@ const Board = () => {
     }
   };
 
+  /* ================= ANIMATION ================= */
+
+  const robotRef = useRef(null);
+  const spinRef = useRef(null);
+
+  const startSpin = () => {
+    spinRef.current = gsap.to(robotRef.current, {
+      rotation: 360,
+      repeat: -1,
+      duration: 1,
+      ease: "none",
+      transformOrigin: "50% 50%",
+    });
+  };
+
+  const stopSpin = () => {
+    if (spinRef.current) {
+      spinRef.current.kill();
+      gsap.to(robotRef.current, { rotation: 0, duration: 0.3 });
+    }
+  };
+
   /* ================= RENDER ================= */
 
   return (
@@ -213,29 +239,39 @@ const Board = () => {
           handelClose={() => setShowResult(false)}
         />
       )}
-      <div className="flex flex-wrap gap-2 justify-center md:items-center">
-        <div className="grid grid-cols-8 border-4 border-grey-color rounded-2xl overflow-hidden">
-          {renderRanks.map((rank) =>
-            renderFiles.map((file) => {
-              const squareId = file + rank;
-              const light = isLightSquare(squareId);
+      <div className="flex flex-wrap gap-2 justify-center items-center lg:items-end">
+        <div className="flex-col">
+          <div className="flex h-8 md:h-12 pl-1 mb-0.5">
+            <div className="flex items-center justify-center h-full w-8 md:w-12 bg-grey-color rounded-full border-3 border-blue-700">
+              <img src="SVG/ai-blue.svg" alt="ai" ref={robotRef} />
+            </div>
+          </div>
 
-              return (
-                <Square
-                  key={squareId}
-                  id={squareId}
-                  color={light ? "blackSquare" : "whiteSquare"}
-                  piece={displayBoard[squareId]}
-                  onClick={handleSquareClick}
-                  onDragStart={handleDragStart}
-                  onDrop={handleOnDrop}
-                  isSelected={squareId === selectedSquare}
-                  isLegalMove={legalMoves.includes(squareId)}
-                  isLastMove={squareId === lastMove.from || squareId === lastMove.to}
-                />
-              );
-            }),
-          )}
+          <div className="grid grid-cols-8 border-4 border-grey-color rounded-2xl overflow-hidden">
+            {renderRanks.map((rank) =>
+              renderFiles.map((file) => {
+                const squareId = file + rank;
+                const light = isLightSquare(squareId);
+
+                return (
+                  <Square
+                    key={squareId}
+                    id={squareId}
+                    color={light ? "blackSquare" : "whiteSquare"}
+                    piece={displayBoard[squareId]}
+                    onClick={handleSquareClick}
+                    onDragStart={handleDragStart}
+                    onDrop={handleOnDrop}
+                    isSelected={squareId === selectedSquare}
+                    isLegalMove={legalMoves.includes(squareId)}
+                    isLastMove={
+                      squareId === lastMove.from || squareId === lastMove.to
+                    }
+                  />
+                );
+              }),
+            )}
+          </div>
         </div>
 
         {promotion && (
@@ -267,7 +303,12 @@ const Board = () => {
                       {moveNumber}.
                     </span>
                   )}
-                  <button onClick={() => jumpToPosition(index)} className="text-white mr-4">{move.san}</button>
+                  <button
+                    onClick={() => jumpToPosition(index)}
+                    className="text-white mr-4"
+                  >
+                    {move.san}
+                  </button>
                 </div>
               );
             })}
@@ -288,7 +329,7 @@ const Board = () => {
                     </span>
                     {whiteMove && (
                       <div
-                        onClick={()=>jumpToPosition(i * 2)}
+                        onClick={() => jumpToPosition(i * 2)}
                         className="text-white flex-1 hover:bg-[#101622] hover:text-blue-700 rounded-lg p-2 cursor-pointer"
                       >
                         {whiteMove.san}
@@ -296,7 +337,7 @@ const Board = () => {
                     )}
                     {blackMove && (
                       <div
-                        onClick={()=>jumpToPosition(i * 2 + 1)}
+                        onClick={() => jumpToPosition(i * 2 + 1)}
                         className="text-white flex-1 hover:bg-[#101622] hover:text-blue-700 rounded-lg p-2 cursor-pointer"
                       >
                         {blackMove.san}

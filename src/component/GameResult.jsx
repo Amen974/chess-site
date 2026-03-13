@@ -34,7 +34,7 @@ const GameResult = ({ gameResult, handelReset, handelClose }) => {
 
             <p className="font-bold text-xl text-gray-400">VS</p>
             <img
-              src="SVG/ai.svg"
+              src="SVG/ai-blue.svg"
               alt="ai"
               width={50}
               height={50}
