@@ -21,6 +21,7 @@ const Board = () => {
   const [showResult, setShowResult] = useState(false);
   const [viewingIndex, setViewingIndex] = useState(-1);
   const [lastMove, setLastMove] = useState({});
+  const [isNewGame, setIsNewGame] = useState(true);
 
   const renderRanks = isFlipped ? [...ranks].reverse() : ranks;
   const renderFiles = isFlipped ? [...files].reverse() : files;
@@ -39,7 +40,7 @@ const Board = () => {
 
   /* ================= REQUEST MOVE ================= */
 
-  async function requestMove({ from, to }) {
+  async function requestMove({ from, to, animate = false }) {
     setViewingIndex(-1);
     setSelectedSquare(null);
     setLegalMoves([]);
@@ -51,8 +52,12 @@ const Board = () => {
     const result = applyPlayerMove({ from, to, state });
     if (!result) return;
 
+    const piece = state.board[from];
+    if (animate) await animateMove(from, to, piece);
+
     dispatch({ type: "COMMIT_MOVE", result });
     setLastMove({ from, to });
+    setIsNewGame(false);
 
     if (result.gameResult) return;
 
@@ -60,13 +65,13 @@ const Board = () => {
       startSpin();
       const aiResult = await playAIMove(result);
       stopSpin();
-      dispatch({ type: "COMMIT_MOVE", result: aiResult ?? result });
+      const piece = result.board[aiResult.move.from];
+      await animateAIMove(aiResult.move.from, aiResult.move.to, piece);
+      dispatch({ type: "COMMIT_MOVE", result: aiResult });
       if (aiResult)
         setLastMove({ from: aiResult.move.from, to: aiResult.move.to });
       return;
     }
-
-    dispatch({ type: "COMMIT_MOVE", result });
   }
 
   /* ================= GAME RESULT TIMEOUT ================= */
@@ -100,6 +105,7 @@ const Board = () => {
 
     playAIMove(state).then((result) => {
       if (result) dispatch({ type: "COMMIT_MOVE", result });
+      setIsNewGame(false);
     });
   }, [aiTurn]);
 
@@ -148,7 +154,7 @@ const Board = () => {
       return;
     }
 
-    requestMove({ from: selectedSquare, to: square });
+    requestMove({ from: selectedSquare, to: square, animate: true });
   };
 
   const computeLegalMoves = (from) => {
@@ -226,6 +232,70 @@ const Board = () => {
     }
   };
 
+  const animateAIMove = (from, to, piece) => {
+    return new Promise((resolve) => {
+      const rectFrom = document.getElementById(from).getBoundingClientRect();
+      const rectTo = document.getElementById(to).getBoundingClientRect();
+
+      const clone = document.createElement("img");
+      clone.src = piece.img;
+      clone.style.position = "fixed";
+      clone.style.top = rectFrom.top + "px";
+      clone.style.left = rectFrom.left + "px";
+      clone.style.width = rectFrom.width + "px";
+      clone.style.height = rectFrom.height + "px";
+      document.body.appendChild(clone);
+
+      const fromPieceEl = document.getElementById(from).querySelector("img");
+      const toPieceEl = document.getElementById(to).querySelector("img");
+      if (fromPieceEl) fromPieceEl.style.opacity = "0";
+      if (toPieceEl) toPieceEl.style.opacity = "0";
+
+      gsap.to(clone, {
+        left: rectTo.left,
+        top: rectTo.top,
+        duration: 0.3,
+        ease: "power2.out",
+        onComplete: () => {
+          clone.remove();
+          resolve();
+        },
+      });
+    });
+  };
+
+  const animateMove = (from, to, piece) => {
+    return new Promise((resolve) => {
+      const rectFrom = document.getElementById(from).getBoundingClientRect();
+      const rectTo = document.getElementById(to).getBoundingClientRect();
+
+      const clone = document.createElement("img");
+      clone.src = piece.img;
+      clone.style.position = "fixed";
+      clone.style.top = rectFrom.top + "px";
+      clone.style.left = rectFrom.left + "px";
+      clone.style.width = rectFrom.width + "px";
+      clone.style.height = rectFrom.height + "px";
+      document.body.appendChild(clone);
+
+      const fromPieceEl = document.getElementById(from).querySelector("img");
+      const toPieceEl = document.getElementById(to).querySelector("img");
+      if (fromPieceEl) fromPieceEl.style.opacity = "0";
+      if (toPieceEl) toPieceEl.style.opacity = "0";
+
+      gsap.to(clone, {
+        left: rectTo.left,
+        top: rectTo.top,
+        duration: 0.3,
+        ease: "power2.out",
+        onComplete: () => {
+          clone.remove();
+          resolve();
+        },
+      });
+    });
+  };
+
   /* ================= RENDER ================= */
 
   return (
@@ -242,7 +312,7 @@ const Board = () => {
       <div className="flex flex-wrap gap-2 justify-center items-center lg:items-end">
         <div className="flex-col">
           <div className="flex h-8 md:h-12 pl-1 mb-0.5">
-            <div className="flex items-center justify-center h-full w-8 md:w-12 bg-grey-color rounded-full border-3 border-blue-700">
+            <div className="flex items-center justify-center h-full w-8 md:w-12 bg-grey-color rounded-full border-3 border-blue-700 cursor-pointer">
               <img src="SVG/ai-blue.svg" alt="ai" ref={robotRef} />
             </div>
           </div>
@@ -267,6 +337,7 @@ const Board = () => {
                     isLastMove={
                       squareId === lastMove.from || squareId === lastMove.to
                     }
+                    isNewGame={isNewGame}
                   />
                 );
               }),

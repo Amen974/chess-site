@@ -1,33 +1,55 @@
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { useRef } from "react";
 
-const Square = ({ piece, color, id, onDrop, onDragStart, onClick, isSelected, isLegalMove, isLastMove, }) => {
+const Square = ({
+  piece,
+  color,
+  id,
+  onDrop,
+  onDragStart,
+  onClick,
+  isSelected,
+  isLegalMove,
+  isLastMove,
+  isNewGame,
+}) => {
   const isTouch = "ontouchstart" in window;
+  const imgRef = useRef(null);
+  useGSAP(() => {
+    if (!imgRef.current || !piece || !isNewGame) return;
+    gsap.from(imgRef.current, { scale: 0.5, opacity: 0, duration: 0.4 });
+  }, [piece]);
   return (
     <div
       className={`relative flex justify-center items-center
     w-10 h-10 sm:w-14 sm:h-14 lg:w-18 lg:h-18 2xl:w-20 2xl:h-20
     ${color}
-    ${isSelected && (color === "blackSquare" ? "brightness-125" : "brightness-90")}
-    ${isLastMove && (color === "blackSquare" ? "brightness-125" : "brightness-90")}
+    ${isSelected && (color === "blackSquare" ? "brightness-125" : "brightness-120")}
+    ${isLastMove && (color === "blackSquare" ? "brightness-125" : "brightness-120")}
   `}
       id={id}
-      onClick={() => {onClick(id)}}
+      onClick={() => {
+        onClick(id);
+      }}
       onDragOver={(e) => e.preventDefault()}
       onDrop={() => onDrop(id)}
     >
-  {isLegalMove && !piece && (
-    <div className="absolute w-3 h-3 md:w-5 md:h-5 rounded-full shadow-md opacity-80 bg-grey-color" />
-  )}
+      {isLegalMove && !piece && (
+        <div className="absolute w-3 h-3 md:w-5 md:h-5 rounded-full shadow-md opacity-80 bg-grey-color" />
+      )}
 
-  {isLegalMove && piece && (
-    <div className="absolute inset-1 rounded-full border-2 md:border-4 piece-attack " />
-  )}
-      
+      {isLegalMove && piece && (
+        <div className="absolute inset-1 rounded-full border-2 md:border-4 piece-attack " />
+      )}
+
       {piece && (
         <img
           src={piece.img}
           alt={piece.type}
-          draggable = {!isTouch}
+          draggable={!isTouch}
           onDragStart={() => onDragStart(id)}
+          ref={imgRef}
           className="cursor-grab w-9 h-9 sm:w-12 sm:h-12 lg:w-16 lg:h-16 2xl:w-18 2xl:h-18"
         />
       )}
