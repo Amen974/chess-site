@@ -266,6 +266,8 @@ const Board = () => {
         ease: "power2.out",
         onComplete: () => {
           clone.remove();
+          const toEl = document.getElementById(to).querySelector('img');
+          if (toEl) toEl.style.opacity = '1';
           resolve();
         },
       });

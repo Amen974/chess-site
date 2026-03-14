@@ -58,6 +58,7 @@ export function applyPlayerMove({ from, to, state }) {
 
       move.captured = board[capturedSquare];
       move.special = "en-passant";
+      move.san = from[0] + "x" + to;
 
       nextState.board[capturedSquare] = null;
     }
