@@ -1,6 +1,6 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 const GameResult = ({ gameResult, handelReset, handelClose }) => {
   const containerRef = useRef(null);
@@ -67,11 +67,23 @@ const GameResult = ({ gameResult, handelReset, handelClose }) => {
       );
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") handelClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handelClose]);
+
   return (
-    <div className="h-screen w-screen flex items-center justify-center fixed z-10 backdrop-blur-xs bg-slate-900/90 shadow-2xl text-white">
+    <div
+      onClick={handelClose}
+      className="h-screen w-screen flex items-center justify-center fixed z-10 backdrop-blur-xs bg-slate-900/90 shadow-2xl text-white"
+    >
       <div
         className="bg-[#101622] h-[60%] w-[90%] sm:w-120 md:w-120 rounded-2xl shadow-2xl"
         ref={containerRef}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="h-[13%] border-b border-gray-800 flex items-center gap-2 p-6 text-gray-400 font-medium text-sm relative">
           <img src="SVG/trophy.svg" alt="trophy" />
@@ -119,7 +131,10 @@ const GameResult = ({ gameResult, handelReset, handelClose }) => {
           </button>
 
           <div>
-            <button ref={newGameRef} className="flex cursor-pointer bg-grey-color rounded-xl px-10 py-3">
+            <button
+              ref={newGameRef}
+              className="flex cursor-pointer bg-grey-color rounded-xl px-10 py-3"
+            >
               <img src="SVG/add.svg" alt="add" width={20} height={20} />
               New Game
             </button>
