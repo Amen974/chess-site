@@ -23,7 +23,7 @@ const Square = ({
   return (
     <div
       className={`relative flex justify-center items-center
-    w-10 h-10 sm:w-14 sm:h-14 lg:w-18 lg:h-18 2xl:w-20 2xl:h-20
+    w-10 h-10 sm:w-14 sm:h-14 lg:w-18 lg:h-18 2xl:w-19.5 2xl:h-19.5
     ${color}
     ${isSelected && (color === "blackSquare" ? "brightness-125" : "brightness-120")}
     ${isLastMove && (color === "blackSquare" ? "brightness-125" : "brightness-120")}

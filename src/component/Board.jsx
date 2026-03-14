@@ -300,6 +300,15 @@ const Board = () => {
     }
   }, [stopAi]);
 
+  const aniHuman = () => {
+    gsap.to("#human", {
+      scale: 0.85,
+      duration: 0.1,
+      yoyo: true,
+      repeat: 1,
+    });
+  };
+
   /* ================= RENDER ================= */
 
   return (
@@ -314,7 +323,7 @@ const Board = () => {
         />
       )}
       <div className="flex flex-wrap gap-2 justify-center items-center lg:items-end">
-        <div className="flex-col">
+        <div className="flex-col relative">
           <div className="flex h-8 md:h-12 pl-1 mb-0.5">
             <div
               onClick={() => {
@@ -358,6 +367,12 @@ const Board = () => {
                 );
               }),
             )}
+          </div>
+          <div
+            onClick={aniHuman}
+            className="flex items-center justify-center absolute right-1 h-8 w-8 md:h-12 md:w-12 bg-grey-color rounded-full border-3 border-blue-700 cursor-pointer"
+          >
+            <img src="SVG/human.svg" alt="human" id="human" />
           </div>
         </div>
 
