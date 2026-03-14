@@ -22,6 +22,7 @@ const Board = () => {
   const [viewingIndex, setViewingIndex] = useState(-1);
   const [lastMove, setLastMove] = useState({});
   const [isNewGame, setIsNewGame] = useState(true);
+  const [stopAi, setStopAi] = useState(false);
 
   const renderRanks = isFlipped ? [...ranks].reverse() : ranks;
   const renderFiles = isFlipped ? [...files].reverse() : files;
@@ -48,6 +49,7 @@ const Board = () => {
     setLastMove({});
 
     if (state.gameResult) return;
+    if (turn === aiTurn && !stopAi) return;
 
     const result = applyPlayerMove({ from, to, state });
     if (!result) return;
@@ -60,13 +62,14 @@ const Board = () => {
     setIsNewGame(false);
 
     if (result.gameResult) return;
+    if (stopAi) return;
 
     if (result.turn === aiTurn) {
       startSpin();
       const aiResult = await playAIMove(result);
       stopSpin();
       const piece = result.board[aiResult.move.from];
-      await animateAIMove(aiResult.move.from, aiResult.move.to, piece);
+      await animateMove(aiResult.move.from, aiResult.move.to, piece);
       dispatch({ type: "COMMIT_MOVE", result: aiResult });
       if (aiResult)
         setLastMove({ from: aiResult.move.from, to: aiResult.move.to });
@@ -102,6 +105,7 @@ const Board = () => {
   useEffect(() => {
     if (history.length !== 0) return;
     if (turn !== aiTurn) return;
+    if (stopAi) return;
 
     playAIMove(state).then((result) => {
       if (result) dispatch({ type: "COMMIT_MOVE", result });
@@ -113,6 +117,7 @@ const Board = () => {
 
   const handleDragStart = (from) => {
     if (isBrowsing) return;
+    if (turn === aiTurn && !stopAi) return;
     const piece = board[from];
     if (!piece || piece.color !== turn || promotion) return;
     setDragFrom(from);
@@ -132,11 +137,13 @@ const Board = () => {
   const handleSquareClick = (square) => {
     if (isBrowsing) return;
     if (promotion) return;
+    if (turn === aiTurn && !stopAi) return;
 
     if (!selectedSquare) {
       const piece = board[square];
       if (!piece || piece.color !== turn) return;
       setSelectedSquare(square);
+      pieceBounce(square);
       setLegalMoves(computeLegalMoves(square));
       return;
     }
@@ -150,6 +157,7 @@ const Board = () => {
     const piece = board[square];
     if (piece && piece.color === turn) {
       setSelectedSquare(square);
+      pieceBounce(square);
       setLegalMoves(computeLegalMoves(square));
       return;
     }
@@ -232,38 +240,6 @@ const Board = () => {
     }
   };
 
-  const animateAIMove = (from, to, piece) => {
-    return new Promise((resolve) => {
-      const rectFrom = document.getElementById(from).getBoundingClientRect();
-      const rectTo = document.getElementById(to).getBoundingClientRect();
-
-      const clone = document.createElement("img");
-      clone.src = piece.img;
-      clone.style.position = "fixed";
-      clone.style.top = rectFrom.top + "px";
-      clone.style.left = rectFrom.left + "px";
-      clone.style.width = rectFrom.width + "px";
-      clone.style.height = rectFrom.height + "px";
-      document.body.appendChild(clone);
-
-      const fromPieceEl = document.getElementById(from).querySelector("img");
-      const toPieceEl = document.getElementById(to).querySelector("img");
-      if (fromPieceEl) fromPieceEl.style.opacity = "0";
-      if (toPieceEl) toPieceEl.style.opacity = "0";
-
-      gsap.to(clone, {
-        left: rectTo.left,
-        top: rectTo.top,
-        duration: 0.3,
-        ease: "power2.out",
-        onComplete: () => {
-          clone.remove();
-          resolve();
-        },
-      });
-    });
-  };
-
   const animateMove = (from, to, piece) => {
     return new Promise((resolve) => {
       const rectFrom = document.getElementById(from).getBoundingClientRect();
@@ -296,6 +272,34 @@ const Board = () => {
     });
   };
 
+  const pieceBounce = (square) => {
+    const el = document.getElementById(square).querySelector("img");
+    gsap.to(el, {
+      scale: 0.85,
+      duration: 0.1,
+      yoyo: true,
+      repeat: 1,
+    });
+  };
+
+  useEffect(() => {
+    if (stopAi) {
+      gsap.to(robotRef.current, {
+        y: -40,
+        duration: 0.3,
+        opacity: 0,
+        ease: "power2.in",
+      });
+    } else {
+      gsap.to(robotRef.current, {
+        y: 0,
+        duration: 0.3,
+        opacity: 1,
+        ease: "power2.out",
+      });
+    }
+  }, [stopAi]);
+
   /* ================= RENDER ================= */
 
   return (
@@ -312,7 +316,19 @@ const Board = () => {
       <div className="flex flex-wrap gap-2 justify-center items-center lg:items-end">
         <div className="flex-col">
           <div className="flex h-8 md:h-12 pl-1 mb-0.5">
-            <div className="flex items-center justify-center h-full w-8 md:w-12 bg-grey-color rounded-full border-3 border-blue-700 cursor-pointer">
+            <div
+              onClick={() => {
+                setStopAi((prev) => {
+                  if (prev === true && turn === aiTurn) {
+                    playAIMove(state).then((result) => {
+                      if (result) dispatch({ type: "COMMIT_MOVE", result });
+                    });
+                  }
+                  return !prev;
+                });
+              }}
+              className="flex items-center justify-center h-full w-8 md:w-12 bg-grey-color rounded-full border-3 border-blue-700 cursor-pointer"
+            >
               <img src="SVG/ai-blue.svg" alt="ai" ref={robotRef} />
             </div>
           </div>
