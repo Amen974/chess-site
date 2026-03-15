@@ -2,7 +2,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useEffect, useRef } from "react";
 
-const GameResult = ({ gameResult, handelReset, handelClose }) => {
+const GameResult = ({ gameResult, handelReset, handelClose, onNewGame  }) => {
   const containerRef = useRef(null);
   const titleRef = useRef(null);
   const reasonRef = useRef(null);
@@ -134,6 +134,7 @@ const GameResult = ({ gameResult, handelReset, handelClose }) => {
             <button
               ref={newGameRef}
               className="flex cursor-pointer bg-grey-color rounded-xl px-10 py-3"
+               onClick={() => { handelClose(); onNewGame();}}
             >
               <img src="SVG/add.svg" alt="add" width={20} height={20} />
               New Game

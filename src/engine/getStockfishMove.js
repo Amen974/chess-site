@@ -1,9 +1,9 @@
-export async function getStockfishMove(fen) {
+export async function getStockfishMove(fen, depth) {
   try {
     const res = await fetch("https://chess-api.com/v1", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fen }),
+      body: JSON.stringify({ fen, depth }),
     });
 
     if (!res.ok) return null;

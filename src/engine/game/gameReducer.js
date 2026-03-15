@@ -144,7 +144,10 @@ export function gameReducer(state, action) {
     }
 
     case "RESET":
-      return initialGameState;
+      return {
+        ...initialGameState,
+        aiTurn: action.aiTurn ?? "black",
+      };
 
     default:
       return state;

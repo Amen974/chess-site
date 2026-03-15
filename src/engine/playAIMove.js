@@ -4,11 +4,11 @@ import { getStockfishMove } from "./getStockfishMove";
 
 const PROMOTION_MAP = { q: "queen", r: "rook", b: "bishop", n: "knight" };
 
-export async function playAIMove(state) {
+export async function playAIMove(state, depth = 12) {
   const fen = exportFEN(state);
 
   const [ai] = await Promise.all([
-    getStockfishMove(fen),
+    getStockfishMove(fen, depth),
     new Promise((resolve) => setTimeout(resolve, 800)),
   ]);
 

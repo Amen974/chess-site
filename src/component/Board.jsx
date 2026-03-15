@@ -11,6 +11,7 @@ import { gameReducer } from "../engine/game/gameReducer";
 import { initialGameState } from "../engine/game/initialGameState";
 import GameResult from "./GameResult";
 import gsap from "gsap";
+import GameSetup from "./GameSetup";
 
 const Board = () => {
   const [dragFrom, setDragFrom] = useState(null);
@@ -23,6 +24,8 @@ const Board = () => {
   const [lastMove, setLastMove] = useState({});
   const [isNewGame, setIsNewGame] = useState(true);
   const [stopAi, setStopAi] = useState(false);
+  const [showSetup, setShowSetup] = useState(false);
+  const [aiDepth, setAiDepth] = useState(12);
 
   const renderRanks = isFlipped ? [...ranks].reverse() : ranks;
   const renderFiles = isFlipped ? [...files].reverse() : files;
@@ -66,7 +69,7 @@ const Board = () => {
 
     if (result.turn === aiTurn) {
       startSpin();
-      const aiResult = await playAIMove(result);
+      const aiResult = await playAIMove(result, aiDepth);
       stopSpin();
       const piece = result.board[aiResult.move.from];
       await animateMove(aiResult.move.from, aiResult.move.to, piece);
@@ -107,7 +110,7 @@ const Board = () => {
     if (turn !== aiTurn) return;
     if (stopAi) return;
 
-    playAIMove(state).then((result) => {
+    playAIMove(state, aiDepth).then((result) => {
       if (result) dispatch({ type: "COMMIT_MOVE", result });
       setIsNewGame(false);
     });
@@ -218,6 +221,17 @@ const Board = () => {
     }
   };
 
+  const handleStart = ({ mode, difficulty, time, side }) => {
+  const random = Math.random();
+  const shouldFlip = side === 'Black' || (side === 'Random' && random > 0.5);
+
+  setIsFlipped(shouldFlip);
+  setStopAi(mode === 'local');
+  setAiDepth(difficulty);
+  setShowSetup(false);
+  dispatch({ type: "RESET", aiTurn: shouldFlip ? "white" : "black" });
+};
+
   /* ================= ANIMATION ================= */
 
   const robotRef = useRef(null);
@@ -312,9 +326,11 @@ const Board = () => {
   };
 
   /* ================= RENDER ================= */
-
+  
   return (
-    <div className="flex justify-center items-center h-screen w-screen">
+    <div className="flex justify-center items-center h-screen w-screen overflow-hidden">
+      {showSetup && <GameSetup onStart={handleStart} handelClose={()=> setShowSetup(false)}/>}
+      
       {showResult && (
         <GameResult
           gameResult={state.gameResult}
@@ -322,6 +338,7 @@ const Board = () => {
             (dispatch({ type: "RESET" }), setShowResult(false));
           }}
           handelClose={() => setShowResult(false)}
+          onNewGame={()=>{dispatch({ type: "RESET" }), setShowSetup(true)}}
         />
       )}
       <div className="flex flex-wrap gap-2 justify-center items-center lg:items-end">
@@ -331,7 +348,7 @@ const Board = () => {
               onClick={() => {
                 setStopAi((prev) => {
                   if (prev === true && turn === aiTurn) {
-                    playAIMove(state).then((result) => {
+                    playAIMove(state, aiDepth).then((result) => {
                       if (result) dispatch({ type: "COMMIT_MOVE", result });
                     });
                   }
