@@ -1,4 +1,5 @@
 import { applyPlayerMove } from "../applyPlayerMove";
+import { resetRepetitionCount } from "../endgame/getRepetitionResult";
 import { generateSAN } from "../generateSAN";
 import { importFEN } from "../importFEN";
 import { undoMove } from "../undoMove";
@@ -144,6 +145,7 @@ export function gameReducer(state, action) {
     }
 
     case "RESET":
+      resetRepetitionCount();
       return {
         ...initialGameState,
         aiTurn: action.aiTurn ?? "black",

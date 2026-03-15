@@ -221,7 +221,7 @@ const Board = () => {
     }
   };
 
-  const handleStart = ({ mode, difficulty, time, side }) => {
+  const handleStart = ({ mode, difficulty, side }) => {
   const random = Math.random();
   const shouldFlip = side === 'Black' || (side === 'Random' && random > 0.5);
 
@@ -326,7 +326,7 @@ const Board = () => {
   };
 
   /* ================= RENDER ================= */
-  
+  console.log(aiTurn)
   return (
     <div className="flex justify-center items-center h-screen w-screen overflow-hidden">
       {showSetup && <GameSetup onStart={handleStart} handelClose={()=> setShowSetup(false)}/>}
@@ -334,16 +334,13 @@ const Board = () => {
       {showResult && (
         <GameResult
           gameResult={state.gameResult}
-          handelReset={() => {
-            (dispatch({ type: "RESET" }), setShowResult(false));
-          }}
           handelClose={() => setShowResult(false)}
           onNewGame={()=>{dispatch({ type: "RESET" }), setShowSetup(true)}}
         />
       )}
       <div className="flex flex-wrap gap-2 justify-center items-center lg:items-end">
         <div className="flex-col relative">
-          <div className="flex h-8 md:h-12 pl-1 mb-0.5">
+          <div className="flex h-8 md:h-12 pl-1 mb-0. relative">
             <div
               onClick={() => {
                 setStopAi((prev) => {
@@ -359,6 +356,8 @@ const Board = () => {
             >
               <img src="SVG/ai-blue.svg" alt="ai" ref={robotRef} />
             </div>
+
+            <img src="SVG/gear.svg" alt="gear" className="absolute right-1 bottom-1 cursor-pointer" onClick={()=>{dispatch({ type: "RESET" }); setShowSetup(true)}} />
           </div>
 
           <div className="grid grid-cols-8 border-4 border-grey-color rounded-2xl overflow-hidden">
@@ -411,7 +410,7 @@ const Board = () => {
 
         <div className="flex flex-col gap-2">
           <div
-            className="flex lg:hidden max-w-80 text-slate-400 whitespace-nowrap overflow-x-auto no-scrollbar"
+            className="flex lg:hidden max-w-70 text-slate-400 whitespace-nowrap overflow-x-auto no-scrollbar"
             ref={sanRefMobile}
           >
             {history.map((move, index) => {

@@ -2,7 +2,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useEffect, useRef } from "react";
 
-const GameResult = ({ gameResult, handelReset, handelClose, onNewGame  }) => {
+const GameResult = ({ gameResult, handelClose, onNewGame  }) => {
   const containerRef = useRef(null);
   const titleRef = useRef(null);
   const reasonRef = useRef(null);
@@ -81,7 +81,7 @@ const GameResult = ({ gameResult, handelReset, handelClose, onNewGame  }) => {
       className="h-screen w-screen flex items-center justify-center fixed z-10 backdrop-blur-xs bg-slate-900/90 shadow-2xl text-white"
     >
       <div
-        className="bg-[#101622] h-[60%] w-[90%] sm:w-120 md:w-120 rounded-2xl shadow-2xl"
+        className="bg-[#101622] h-[60%] w-90 sm:w-120 sm:h-[70%] rounded-2xl shadow-2xl border border-gray-800"
         ref={containerRef}
         onClick={(e) => e.stopPropagation()}
       >
@@ -96,7 +96,7 @@ const GameResult = ({ gameResult, handelReset, handelClose, onNewGame  }) => {
           </button>
         </div>
 
-        <div className="h-[77%] flex flex-col items-center p-7 gap-4">
+        <div className="h-[77%] flex flex-col items-center p-7 gap-7">
           <div className="flex flex-col items-center">
             <h1 className="text-3xl font-bold" ref={titleRef}>
               {" "}
@@ -121,28 +121,21 @@ const GameResult = ({ gameResult, handelReset, handelClose, onNewGame  }) => {
             </div>
           </div>
 
-          <button
-            onClick={handelReset}
-            className="bg-blue-700 w-full p-3 rounded-xl cursor-pointer font-medium flex justify-center gap-0.5"
-            ref={buttonsRef}
-          >
-            <img src="SVG/restart.svg" alt="restart" />
-            REMATCH
-          </button>
 
-          <div>
             <button
               ref={newGameRef}
-              className="flex cursor-pointer bg-grey-color rounded-xl px-10 py-3"
+              className="flex justify-center cursor-pointer bg-blue-700 rounded-xl px-10 py-3 font-medium w-full"
                onClick={() => { handelClose(); onNewGame();}}
             >
               <img src="SVG/add.svg" alt="add" width={20} height={20} />
               New Game
             </button>
-          </div>
+
         </div>
 
-        <div className="h-[10%] border-t border-gray-800"></div>
+        <div className="h-[10%] border-t border-gray-800 flex items-center justify-center text-xs font-medium text-gray-500">
+          <p>READY FOR ANOTHER GAME ?</p>
+        </div>
       </div>
     </div>
   );

@@ -1,5 +1,9 @@
 const positionCount = {};
 
+export function resetRepetitionCount() {
+  Object.keys(positionCount).forEach(k => delete positionCount[k]);
+}
+
 export function getRepetitionResult(fen){
   const parts = fen.trim().split(" ");
 
