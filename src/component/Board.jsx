@@ -326,7 +326,7 @@ const Board = () => {
   };
 
   /* ================= RENDER ================= */
-  console.log(aiTurn)
+  
   return (
     <div className="flex justify-center items-center h-screen w-screen overflow-hidden">
       {showSetup && <GameSetup onStart={handleStart} handelClose={()=> setShowSetup(false)}/>}
